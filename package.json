@@ -11,7 +11,6 @@
     "url": "bottest"
   },
   "author": "SecretIdetity",
-  "license": "ISC",
   "dependencies": {
     "@discord-player/extractor": "^4.2.1",
     "@discordjs/voice": "^0.16.0",
