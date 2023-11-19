@@ -1,0 +1,3743 @@
+//since 1/5/22: +added -removed >fixed
+const { Collection, Client, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Message, ContextMenuInteraction, DiscordAPIError, CommandInteractionOptionResolver, GatewayIntentBits, Partials, InteractionCollector, REST, Routes, ActivityType } = require('discord.js');
+const { Player, QueryType, Track } = require("discord-player");
+const ffmpeg = require('ffmpeg-static');
+const fs = require('fs');
+const path = require('path');
+const { createCanvas, loadImage } = require('canvas');
+const axios = require('axios');
+const { XMLParser, XMLBuilder, XMLValidator } = require('fast-xml-parser');
+cf = './config.json';
+df = './data.json';
+conf = require(cf);
+data = require(df);
+egfg = require('./epic.json');
+games = require('./games.json');
+const aes = require('./aes');
+const gifencoder = require('gifencoder');
+const { ButtonStyle } = require('discord-api-types/v10');
+const { isStringObject } = require('util/types');
+'use strict';
+const { networkInterfaces } = require('os');
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildVoiceStates,
+    ],
+    restRequestTimeout: 60000, partials: [Partials.Channel, Partials.Message, Partials.Reaction]
+});
+const player = new Player(client);
+var c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18;
+var log = fs.createWriteStream('logs.txt', { flags: 'a' });
+var bootleg = [];
+var legboot = [];
+var legtime = [];
+var filters = {};
+let d = new Date();
+var rnd = [];
+
+while (d.getHours() > 23 || d.getHours() < 7) {
+    die(300000);
+}
+
+//slash commands bs i aint gonna rewrite that
+client.commands = new Collection();
+const cpath = path.join(__dirname, 'commands');
+const cfiles = fs.readdirSync(cpath).filter(file => file.endsWith('.js'));
+for (const f of cfiles) {
+    const p = path.join(cpath, f);
+    const c = require(p);
+    if ('data' in c && 'execute' in c) {
+        client.commands.set(c.data.name, c);
+    } else {
+        console.log(`failed ${p}`);
+    }
+}
+
+async function die(a) {
+    await sleep(a);
+    process.exit(1);
+}
+
+if (data == undefined || data.restart == undefined || data.restart > 250) {
+    if (!conf.debug) {
+        console.log('Boot looping! Startup prevented.');
+        process.exit(0);
+    }
+}
+data.restart++;
+
+const sup = {
+    '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '+': '⁺',
+    '-': '⁻', '=': '⁼', '(': '⁽', ')': '⁾', 'π': 'ᵖ', 'a': 'ᵃ', 'b': 'ᵇ', 'c': 'ᶜ', 'd': 'ᵈ', 'e': 'ᵉ', 'f': 'ᶠ',
+    'g': 'ᵍ', 'h': 'ʰ', 'i': 'ⁱ', 'j': 'ʲ', 'k': 'ᵏ', 'l': 'ˡ', 'm': 'ᵐ', 'n': 'ⁿ', 'o': 'ᵒ', 'p': 'ᵖ', 'r': 'ʳ',
+    's': 'ˢ', 't': 'ᵗ', 'u': 'ᵘ', 'v': 'ᵛ', 'w': 'ʷ', 'x': 'ˣ', 'y': 'ʸ', 'z': 'ᶻ', 'A': 'ᴬ', 'B': 'ᴮ', 'C': 'ᶜ',
+    'D': 'ᴰ', 'E': 'ᴱ', 'F': 'ᶠ', 'G': 'ᴳ', 'H': 'ᴴ', 'I': 'ᴵ', 'J': 'ᴶ', 'K': 'ᴷ', 'L': 'ᴸ', 'M': 'ᴹ', 'N': 'ᴺ',
+    'O': 'ᴼ', 'P': 'ᴾ', 'R': 'ᴿ', 'S': 'ˢ', 'T': 'ᵀ', 'U': 'ᵁ', 'V': 'ᵛ', 'W': 'ᵂ', 'X': 'ˣ', 'Y': 'ʸ', 'Z': 'ᶻ',
+}
+
+const sub = {
+    '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉', '+': '₊',
+    '-': '₋', '=': '₌', '(': '₍', ')': '₎', 'a': 'ₐ', 'c': '꜀', 'e': 'ₑ', 'h': 'ₕ', 'i': 'ᵢ', 'l': 'ₗ', 'm': 'ₘ',
+    'n': 'ₙ', 'o': 'ₒ', 'p': 'ₚ', 'r': 'ᵣ', 's': 'ₛ', 't': 'ₜ', 'u': 'ᵤ', 'v': 'ᵥ', 'x': 'ₓ'
+}
+
+player.on('trackStart', (q) => {
+    playmsg(undefined, q.guild.id, 0);
+    setStatus(1);
+});
+player.on('trackEnd', (q) => {
+    playmsg(undefined, q.guild.id, 0);
+});
+player.on('botDisconnect', (q) => {
+    player.deleteQueue(q.guild);
+    playmsg(undefined, q.guild.id, 0, "Disconnected");
+    setStatus(0);
+});
+player.on('queueEnd', (q) => {
+    playmsg(undefined, q.guild.id, 0, "Queue has ended");
+    setStatus(0);
+});
+player.on('channelEmpty', (q) => {
+    player.deleteQueue(q.guild);
+    playmsg(undefined, q.guild.id, 0, "I was left alone :'(");
+    setStatus(0);
+});
+player.on('error', (q, e) => {
+    console.log(e);
+    //playmsg(undefined, q.guild.id, 0, "ah yes error");
+});
+player.on('connectionError', (q, e) => {
+    console.log(e);
+    playmsg(undefined, q.guild.id, 0, "ah yes connection error");
+});
+player.on('leave', (q, e) => {
+    console.log(q, e);
+    setStatus(0);
+});
+client.on('shardResume', (s, n) => {
+    setStatus(0);
+});
+client.on('error', (e) => {
+    console.log(e);
+});
+client.once('ready', async () => {
+    echan = client.channels.cache.get(conf.epic);
+    xchan = client.channels.cache.get(conf.xkcd);
+    wchan = client.channels.cache.get(conf.wel);
+    gchan = client.channels.cache.get("938392356917489704");
+    c1 = await loadImage('./chess/1.png');
+    c2 = await loadImage('./chess/2.png');
+    c3 = await loadImage('./chess/3.png');
+    c4 = await loadImage('./chess/4.png');
+    c5 = await loadImage('./chess/5.png');
+    c6 = await loadImage('./chess/6.png');
+    c7 = await loadImage('./chess/7.png');
+    c8 = await loadImage('./chess/8.png');
+    c9 = await loadImage('./chess/9.png');
+    c10 = await loadImage('./chess/10.png');
+    c11 = await loadImage('./chess/11.png');
+    c12 = await loadImage('./chess/12.png');
+    c13 = await loadImage('./chess/13.png');
+    c14 = await loadImage('./chess/14.png');
+    c15 = await loadImage('./chess/15.png');
+    c16 = await loadImage('./chess/16.png');
+    c17 = await loadImage('./chess/17.png');
+    c18 = await loadImage('./chess/18.png');
+    for (let j in data) {
+        if (j == 'ttt' || j == 'con' || j == 'chess')
+            for (let i in data[j]) {
+                await client.users.fetch(data[j][i].usr.id);
+                await client.users.fetch(data[j][i].init.id);
+                data[j][i].usr = client.users.cache.get(data[j][i].usr.id);
+                data[j][i].init = client.users.cache.get(data[j][i].init.id);
+            }
+    }
+    for (let j in data.message) {
+        let t = await client.channels.fetch(data.message[j].channelId);
+        data.message[j] = await t.messages.fetch(j);
+    }
+    setStatus(0);
+    console.log(`${client.user.tag}!`);
+})
+client.on("guildMemberRemove", member => {
+    wchan.send(`${member} has decided to abandon ship.`)
+})
+client.on("guildMemberAdd", async member => {
+    let u = client.users.cache.get(member.user.id);
+    const canvas = createCanvas(2048, 256);
+    const ctx = canvas.getContext('2d');
+    if (u.avatar == null) {
+        fs.copyFile('./fix.png', './avatar.png', (err) => {
+            if (err) throw err;
+        });
+    }
+    else {
+        const r = await axios({ url: u.avatarURL({ format: 'png', size: 1024 }), method: 'GET', responseType: 'stream' });
+        await r.data.pipe(fs.createWriteStream('./avatar.png'));
+    }
+    await sleep(500);
+    let a;
+    try {
+        a = await loadImage('./avatar.png');
+    } catch (e) {
+        await sleep(1000);
+        try {
+            a = await loadImage('./avatar.png');
+        } catch (e) {
+            await sleep(5000);
+            try {
+                a = await loadImage('./avatar.png');
+            } catch (e) { a = await loadImage('./fix.png'); }
+        }
+    }
+    const c = await loadImage('./welcome.png');
+    ctx.drawImage(c, 0, 0, 2048, 256);
+    ctx.fillStyle = '#000000';
+    ctx.font = '48pt segoe ui symbol';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${member.user.username} has boarded the ship!`, 256, 128);
+    ctx.beginPath();
+    ctx.arc(128, 128, 64, 0, Math.PI * 2, false);
+    ctx.clip();
+    ctx.drawImage(a, 64, 64, 128, 128);
+    ctx.restore();
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.arc(128, 128, 64, 0, Math.PI * 2, false);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.closePath();
+    ctx.restore();
+    const b = canvas.toBuffer('image/png');
+    fs.writeFileSync('./avatar.png', b);
+    await wchan.send({ content: `Welcome ${u}!`, files: ['./avatar.png'] });
+    fs.unlinkSync('./avatar.png');
+})
+client.on('messageReactionAdd', async (reaction, user) => {
+    if (reaction.partial) {
+        try {
+            await reaction.fetch();
+        } catch (error) {
+            return;
+        }
+    }
+    const message = !reaction.message.author ? await reaction.message.fetch() : reaction.message;
+    if (reaction.emoji.name == '❌' && user.id == conf.admin) {
+        try {
+            await message.delete();
+        } catch (e) { };
+    }
+});
+client.on("messageCreate", async message => {
+    /*if (conf.debug && message.guildId != conf.guild) {
+        if (message.guildId != conf.guilds) {
+            msg.write(`ERROR: GUILD NOT RECOGNIZED: ${message}`);
+            data.restart += 1000;
+            process.exit();
+        }
+        else
+            return;
+    }
+    if (!conf.debug && message.guildId != conf.guilds) {
+        if (message.guildId != conf.guild) {
+            msg.write(`ERROR: GUILD NOT RECOGNIZED: ${message}`);
+            data.restart += 1000;
+            process.exit();
+        }
+        else
+            return;
+    }*/
+    if (message.author.bot) return;
+    //if(message.content.replace(':DB:').match(/^[^a-z]+$/) && message.content.replace(':DB:').match(/.*[A-Z].*/) && message.content.length > 3){
+    //    message.channel.send('caps');
+    //    return;
+    //}
+    if (message.content.startsWith('-p')) {
+        message.react('🙁');
+        return;
+    }
+    if (message.content == conf.prefix) return;
+    if (!message.content.startsWith(conf.prefix)) return;
+    if (message.content.startsWith(conf.prefix + conf.prefix)) return;
+    log.write(`${message.author.username}#${message.author.discriminator} in ${message.channel.name} on ${new Intl.DateTimeFormat('en-GB', { dateStyle: 'full', timeStyle: 'short' }).format(new Date(message.createdTimestamp))}: ${message.content}\n`); //cmd debug
+    let commandBody = message.content.slice(conf.prefix.length);
+    const args = commandBody.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').split(' ');
+    const command = args.shift().toLowerCase();
+    let s = '';
+    if (command === "ttt" || command === 'tictactoe' || command === '3') {
+        if (data.ttt == undefined)
+            data.ttt = {};
+        let init = message.author;
+        let turn = random(2);
+        let user = args.shift();
+        if (user == undefined) {
+            message.channel.send(`Please add a valid user using @ or the users id,\n${init}.`);
+            return;
+        }
+        user = user.toLowerCase();
+        user = user.replace('<', '');
+        user = user.replace('@', '');
+        user = user.replace('!', '');
+        user = user.replace('>', '');
+        try {
+            const s = message.channel.guild.members.cache.get(user);
+        }
+        catch (e) {
+            message.channel.send(`Please add a valid user using @ or the users id,\n${init}.`);
+            return;
+        }
+        const us = message.channel.guild.members.cache.get(user);
+        const usr = us.user;
+        if (usr == undefined) {
+            message.channel.send(`Please add a valid user using @ or the users id,\n${init}.`);
+            return;
+        }
+        if (usr.bot) {
+            message.channel.send(`You cannot challenge bots,\n${init}.`);
+            return;
+        }
+        s = `${init} is playing TicTacToe against ${usr}\n`;
+        if (!turn) {
+            s += `It's ⭕${init}'s turn.`;
+        }
+        else {
+            s += `It's ❌${usr}'s turn.`;
+        }
+        const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('a0').setLabel('.').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('a1').setLabel('.').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('a2').setLabel('.').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('a9').setLabel('🏳️').setStyle(ButtonStyle.Danger));
+        const r2 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('a3').setLabel('.').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('a4').setLabel('.').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('a5').setLabel('.').setStyle(ButtonStyle.Secondary));
+        const r3 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('a6').setLabel('.').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('a7').setLabel('.').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('a8').setLabel('.').setStyle(ButtonStyle.Secondary));
+        let sent = await message.channel.send({ content: s, components: [r1, r2, r3] });
+        data.ttt[sent.id] = {};
+        data.ttt[sent.id].turn = turn;
+        data.ttt[sent.id].init = init;
+        data.ttt[sent.id].usr = usr;
+        data.ttt[sent.id].channel = sent.channel.id;
+        data.ttt[sent.id].data = new Array(9).fill(0);
+        data.ttt[sent.id].time = new Date().getTime();
+    }
+    else if (command == 'u' || command == 'uno') { //tbd
+        if (data.uno == undefined)
+            data.uno = {};
+        let user = args;
+        user.forEach(s, i => {
+            user[i] = s.toLowerCase().replace('<', '').replace('@', '').replace('!', '').replace('>', '');
+            try {
+                const t = message.channel.guild.members.cache.get(s);
+            }
+            catch (e) {
+                message.channel.send(`Please add a valid user using @ or the users id,\n${init}.`);
+                return;
+            }
+            const us = message.channel.guild.members.cache.get(s);
+            const usr = us.user;
+            if (usr == undefined) {
+                message.channel.send(`Please add a valid user using @ or the users id,\n${message.author}.`);
+                return;
+            }
+            if (usr.bot) {
+                message.channel.send(`You cannot challenge bots,\n${message.author}.`);
+                return;
+            }
+        });
+        user.push(message.author);
+        const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('fa').setLabel('1').setStyle(ButtonStyle.Secondary));
+        let sent = await message.channel.send({ content: "Use the Button to see your Deck.\nIt's only valid for 15 Minutes (per Discord).", components: [r1] });
+        data.uno[sent.id] = {};
+        data.uno[sent.id].turn = random(user.length);
+        data.ttt[sent.id].channel = sent.channel.id;
+        data.ttt[sent.id].data = new Array(9).fill(0);
+        data.ttt[sent.id].user = user;
+    }
+    else if (command == 'thisisthesupersecretdeletefunction') {
+        //else if(command == 'del' || command == 'unspam' || command == 'delete'){
+        message.channel.send(`This feature of bulk-deleting messages is currently deactivated,\n${message.author}.`);
+        return;
+        let i = 0;
+        let t = args.shift();
+        if (t == undefined) {
+            t = '1';
+        }
+        t = t.toLowerCase();
+        let channel = message.channel;
+        try {
+            t = parseInt(t);
+        } catch (e) { message.channel.send(`Please add a valid integer number of messages to delete,\n${message.author}.`); return; }
+        if (Number.isInteger(t)) {
+            i = t;
+        }
+        channel.bulkDelete(i + 1);
+        console.log(`${message.author} deleted ${i + 1} messages in ${channel.id}.`)
+    }
+    else if (command == '4win' || command == 'connect4' || command == '4' || command == 'connect') {
+        if (data.con == undefined)
+            data.con = {};
+        let init = message.author;
+        let turn = random(2);
+        let user = args.shift();
+        if (user == undefined) {
+            message.channel.send(`Please add a valid user using @ or the users id,\n${init}.`);
+            return;
+        }
+        user = user.toLowerCase();
+        user = user.replace('<', '');
+        user = user.replace('@', '');
+        user = user.replace('!', '');
+        user = user.replace('>', '');
+        try {
+            const s = message.channel.guild.members.cache.get(user);
+        }
+        catch (e) {
+            message.channel.send(`Please add a valid user using @ or the users id,\n${init}.`);
+            return;
+        }
+        const us = message.channel.guild.members.cache.get(user);
+        const usr = us.user;
+        if (usr == undefined) {
+            message.channel.send(`Please add a valid user using @ or the users id,\n${init}.`);
+            return;
+        }
+        if (usr.bot) {
+            message.channel.send(`You cannot challenge bots,\n${init}.`);
+            return;
+        }
+        s = `${init} is playing connect 4 against ${usr}\n`;
+        if (!turn) {
+            s += `It's ⭕${init}'s turn.`;
+        }
+        else {
+            s += `It's ❌${usr}'s turn.`;
+        }
+        s += '\n```\n| 1  2  3  4  5  6  7|';
+        for (let i = 0; i < 6; i++)
+            s += '\n|  |  |  |  |  |  |  |';
+        s += '\n```';
+        const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('b0').setLabel('1').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b1').setLabel('2').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b2').setLabel('3').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b3').setLabel('4').setStyle(ButtonStyle.Secondary));
+        const r2 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('b4').setLabel('5').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b5').setLabel('6').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b6').setLabel('7').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b7').setLabel('🏳️').setStyle(ButtonStyle.Danger));
+        let sent = await message.channel.send({ content: s, components: [r1, r2] });
+        data.con[sent.id] = {};
+        data.con[sent.id].turn = turn;
+        data.con[sent.id].init = init;
+        data.con[sent.id].usr = usr;
+        data.con[sent.id].channel = sent.channel.id;
+        data.con[sent.id].data = new Array(42).fill(0);
+        data.con[sent.id].time = new Date().getTime();
+    }
+    else if (command == 'test') {
+        message.channel.send(`yaay ${message.author} test complete`);
+    }
+    else if (command == 'pp' || command == 'ping') {
+        message.channel.send(`${new Date().getTime() - message.createdTimestamp}`);
+    }
+    else if (command == 'ip') {
+        if (message.author.id != conf.admin)
+            return;
+        const nets = networkInterfaces();
+        const results = Object.create(null);
+        for (const name of Object.keys(nets)) {
+            for (const net of nets[name]) {
+                const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4
+                if (net.family === familyV4Value && !net.internal) {
+                    if (!results[name]) {
+                        results[name] = [];
+                    }
+                    results[name].push(net.address);
+                }
+            }
+        }
+        message.channel.send(results["WiFi"] ? results["WiFi"][0] : results["wlan0"] ? results["wlan0"][0] : 'not found rip');
+    }
+    else if (command == 'save') {
+        if (message.author.id != conf.admin)
+            return;
+        let msg = message.channel.send('saving...');
+        await save();
+        (await msg).edit('saved');
+    }
+    else if (command == 'restart') {
+        if (message.author.id != conf.admin)
+            return;
+        message.channel.send('restarting...');
+        await save();
+        die(1000);
+    }
+    else if (command == 'rng') {
+        if (message.author.id != conf.admin)
+            return;
+        let cmd = args.shift();
+        if (cmd == 'get') {
+            message.channel.send(data.ctr + ' ' + rnd.length);
+        } else if (cmd == 'set') {
+            let r1 = parseInt(args.shift());
+            let r2 = parseInt(args.shift());
+            if (r1 >= 0 && r2 == 0) {
+                data.ctr = r1;
+                rnd = [];
+                message.channel.send(data.ctr + ' ' + rnd.length);
+            } else if (r1 >= 0 && r2 >= 0 && r2 < 4) {
+                data.ctr = r1 - 1;
+                rnd = [];
+                while (r2 != rng.length) {
+                    random(1);
+                }
+                message.channel.send(data.ctr + ' ' + rnd.length);
+            } else {
+                message.channel.send('invalid number');
+            }
+        }
+    }
+    else if (command == 'chess' || command == 'c' || command == '2') {
+        if (data.chess == undefined)
+            data.chess = {};
+        if (data.chessusr == undefined)
+            data.chessusr = {};
+        if (data.message == undefined)
+            data.message = {};
+        let init = message.author;
+        let color = random(2);
+        let user = args.shift();
+        let dat = [10, 8, 9, 11, 12, 9, 8, 10, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 4, 2, 3, 5, 6, 3, 2, 4];
+        if (user == undefined) {
+            message.channel.send(`Please add a valid user using @ or the users id,\n${init}.`);
+            return;
+        }
+        user = user.toLowerCase();
+        user = user.replace('<', '');
+        user = user.replace('@', '');
+        user = user.replace('!', '');
+        user = user.replace('>', '');
+        try {
+            const s = message.channel.guild.members.cache.get(user);
+        }
+        catch (e) {
+            message.channel.send(`Please add a valid user using @ or the users id,\n${init}.`);
+            return;
+        }
+        const us = message.channel.guild.members.cache.get(user);
+        let usr = undefined;
+        try {
+            usr = us.user;
+        } catch (e) { console.log(e); }
+        if (data.chessusr[init.id] != undefined) {
+            message.channel.send(`You already have an active game of chess,\n${init}.`);
+            return;
+        }
+        if (usr == undefined) {
+            message.channel.send(`Please add a valid user using @ or the users id,\n${init}.`);
+            return;
+        }
+        if (usr.bot) {
+            message.channel.send(`You cannot challenge bots,\n${init}.`);
+            return;
+        }
+        if (data.chessusr[usr.id] != undefined) {
+            message.channel.send(`${usr.username} already has an active game of chess,\n${init}.`);
+            return;
+        }
+        s = `${init} is playing chess against ${usr}\n`;
+        if (color == 0) {
+            s += `It's ⬜${init}'s turn. Use ${conf.prefix}m/move pos1 pos2 to move your pieces.\nUse ${conf.prefix}d/${conf.prefix}draw to offer a draw and ${conf.prefix}resign to resign.`;
+        }
+        else {
+            s += `It's ⬜${usr}'s turn. Use ${conf.prefix}m/move pos1 pos2 to move your pieces.\nUse ${conf.prefix}d/${conf.prefix}draw to offer a draw and ${conf.prefix}resign to resign.`;
+        }
+        let g = new Array(64).fill(0);
+        let h = new Array(12).fill(0);
+        let n = random(100000);
+        fs.mkdirSync(`./${n}`);
+        if (color)
+            await chessimg(dat, [-1, -1, -1, -1], g, usr.username, init.username, 0, h, n, n, 0);
+        else
+            await chessimg(dat, [-1, -1, -1, -1], g, init.username, usr.username, 0, h, n, n, 0);
+        let sent = await message.channel.send({ content: s, files: [`./${n}.png`] });
+        data.chess[sent.id] = {};
+        data.chess[sent.id].turn = 0;
+        data.chess[sent.id].color = color;
+        data.chess[sent.id].init = init;
+        data.chess[sent.id].usr = usr;
+        data.chess[sent.id].channel = sent.channel.id;
+        data.chess[sent.id].data = dat;
+        data.chess[sent.id].extra = g;
+        data.chess[sent.id].taken = h;
+        data.chess[sent.id].draw = [0, 0, 0, 0];
+        data.chess[sent.id].time = new Date().getTime();
+        data.chessusr[usr.id] = sent.id;
+        data.chessusr[init.id] = sent.id;
+        data.message[sent.id] = sent;
+        fs.renameSync(`./${n}`, `./${sent.id}`);
+        fs.unlinkSync(`./${n}.png`);
+    }
+    else if (command == 'move' || command == 'm') {
+        if (data.chessusr[message.author.id] == undefined) {
+            message.channel.send(`You do not have an active game,\n${message.author}.`);
+            return;
+        }
+        let chessdata = data.chess[data.chessusr[message.author.id]];
+        if (chessdata.usr.id != chessdata.init.id)
+            if ((chessdata.color + chessdata.turn) % 2 == 0) {
+                if (message.author.id != chessdata.init.id) {
+                    message.channel.send(`It is not your turn,\n${message.author}.`);
+                    return;
+                }
+            }
+            else {
+                if (message.author.id != chessdata.usr.id) {
+                    message.channel.send(`It is not your turn,\n${message.author}.`);
+                    return;
+                }
+            }
+        let pos1 = args.shift();
+        if (pos1 == undefined) {
+            message.channel.send(`Please enter a valid first position,\n${message.author}.`);
+            return;
+        }
+        pos1 = pos1.toLowerCase();
+        if (pos1.charCodeAt(0) < 97 || pos1.charCodeAt(0) > 104 || pos1[1] < 1 || pos1[1] > 8 || pos1[1] == undefined) {
+            message.channel.send(`Please enter a valid first position,\n${message.author}.`);
+            return;
+        }
+        let pos2 = args.shift();
+        if (pos2 == undefined) {
+            message.channel.send(`Please enter a valid second position,\n${message.author}.`);
+            return;
+        }
+        pos2 = pos2.toLowerCase();
+        if (pos2.charCodeAt(0) < 97 || pos2.charCodeAt(0) > 104 || pos2[1] < 1 || pos2[1] > 8 || pos2[1] == undefined) {
+            message.channel.send(`Please enter a valid second position,\n${message.author}.`);
+            return;
+        }
+        let p1 = parseInt(8 - pos1[1]) * 8 + parseInt(pos1.charCodeAt(0)) - 97;
+        let p2 = parseInt(8 - pos2[1]) * 8 + parseInt(pos2.charCodeAt(0)) - 97;
+        let m = chessmove(chessdata.data, p1, p2, chessdata.turn, chessdata.extra);
+        switch (m) {
+            case 0:
+                message.channel.send(`You cannot move that,\n${message.author}.`);
+                break;
+            case 1:
+                message.channel.send(`You cannot move there,\n${message.author}.`);
+                break;
+            case 2:
+                let e = JSON.parse(JSON.stringify(chessdata.data));
+                let f = JSON.parse(JSON.stringify(chessdata.extra));
+                e[p2] = parseInt(e[p1]);
+                e[p1] = 0;
+                f[p1] += 1;
+                f.fill(0, 8, 15);
+                f.fill(0, 48, 55);
+                if (p1 > 7 && p1 < 16 && p2 > 23 && p2 < 32)
+                    f[p1] = 1;
+                if (p1 > 47 && p1 < 56 && p2 > 31 && p2 < 40)
+                    f[p1] = 1;
+                if (chesscheck(e, (chessdata.turn + 0) % 2, f) > -1) {
+                    message.channel.send(`You must get out of check,\n${message.author}.`);
+                    return;
+                }
+                let q = '';
+                let pb = 0;
+                if (chessdata.data[p1] == 1 && p2 < 8) {
+                    q = args.shift();
+                    if (q == undefined) {
+                        message.channel.send(`You must specify a unit to promote to after your second position with\nk/knight, b/bishop, r/rook, q/queen,\n${message.author}.`);
+                        return;
+                    }
+                    q = q.toLowerCase();
+                    if (q != 'k' && q != 'knight' && q != 'b' && q != 'bishop' && q != 'r' && q != 'rook' && q != 'q' && q != 'queen') {
+                        message.channel.send(`You must specify a unit to promote to after your second position with\nk/knight, b/bishop, r/rook, q/queen,\n${message.author}.`);
+                        return;
+                    }
+                    else
+                        pb = 1;
+                }
+                if (chessdata.data[p1] == 7 && p2 > 56) {
+                    q = args.shift();
+                    if (q == undefined) {
+                        message.channel.send(`You must specify a unit to promote to after your second position with\nk/knight, b/bishop, r/rook, q/queen,\n${message.author}.`);
+                        return;
+                    }
+                    q = q.toLowerCase();
+                    if (q != 'k' && q != 'knight' && q != 'b' && q != 'bishop' && q != 'r' && q != 'rook' && q != 'q' && q != 'queen') {
+                        message.channel.send(`You must specify a valid unit to promote to after your second position with\nk/knight, b/bishop, r/rook, q/queen,\n${message.author}.`);
+                        return;
+                    }
+                    pb = 2;
+                }
+                let r = [-1, -1];
+                if (chessdata.draw[0] != 0) {
+                    if (chessdata.draw[2] == 0)
+                        data.message[chessdata.draw[0]].edit({ content: 'This draw offer has expired.', components: [] });
+                    delete data.message[chessdata.draw[0]];
+                }
+                if (chessdata.draw[1] != 0) {
+                    if (chessdata.draw[3] == 0)
+                        if (data.message[chessdata.draw[1]].content == s)
+                            data.message[chessdata.draw[1]].edit({ content: 'This draw offer has expired.', components: [] });
+                    delete data.message[chessdata.draw[1]];
+                }
+                chessdata.draw = [0, 0, 0, 0];
+                chessdata.turn = (chessdata.turn + 1) % 2;
+                if (chessdata.data[p2] == 0)
+                    if (chessdata.data[p1] == 1 || chessdata.data[p1] == 7) {
+                        if (p1 - p2 == 7 || p1 - p2 == 9) {
+                            if (chessdata.data[p2 + 8] != 0)
+                                chessdata.taken[chessdata.data[p2 + 8] - 1]++;
+                            chessdata.data[p2 + 8] = 0;
+                        }
+                        if (p2 - p1 == 7 || p2 - p1 == 9) {
+                            if (chessdata.data[p2 - 8] != 0)
+                                chessdata.taken[chessdata.data[p2 - 8] - 1]++;
+                            chessdata.data[p2 - 8] = 0;
+                        }
+                    }
+                if (chessdata.data[p1] == 6 || chessdata.data[p1] == 12) {
+                    if (p2 == p1 + 2) {
+                        chessdata.data[p1 + 1] = chessdata.data[p1 + 3];
+                        chessdata.data[p1 + 3] = 0;
+                        r[0] = p1 + 1;
+                        r[1] = p1 + 3;
+                    }
+                    if (p2 == p1 - 2) {
+                        chessdata.data[p1 - 1] = chessdata.data[p1 - 4];
+                        chessdata.data[p1 - 4] = 0;
+                        r[0] = p1 - 1;
+                        r[1] = p1 - 4;
+                    }
+                }
+                if (chessdata.data[p2] != 0)
+                    chessdata.taken[chessdata.data[p2] - 1]++;
+                chessdata.data[p2] = parseInt(chessdata.data[p1]);
+                chessdata.data[p1] = 0;
+                if (pb == 1)
+                    switch (q) {
+                        case 'b': case 'bishop':
+                            chessdata.data[p2] = 2;
+                        case 'k': case 'knight':
+                            chessdata.data[p2] = 3;
+                        case 'r': case 'rook':
+                            chessdata.data[p2] = 4;
+                        case 'q': case 'queen':
+                            chessdata.data[p2] = 5;
+                    }
+                if (pb == 2)
+                    switch (q) {
+                        case 'b': case 'bishop':
+                            chessdata.data[p2] = 8;
+                        case 'k': case 'knight':
+                            chessdata.data[p2] = 9;
+                        case 'r': case 'rook':
+                            chessdata.data[p2] = 10;
+                        case 'q': case 'queen':
+                            chessdata.data[p2] = 11;
+                    }
+                chessdata.extra[p1] += 1;
+                chessdata.extra.fill(0, 8, 15);
+                chessdata.extra.fill(0, 48, 55);
+                if (p1 > 7 && p1 < 16 && p2 > 23 && p2 < 32)
+                    chessdata.extra[p1] = 1;
+                if (p1 > 47 && p1 < 56 && p2 > 31 && p2 < 40)
+                    chessdata.extra[p1] = 1;
+                //try{
+                //    data.message[data.chessusr[chessdata.init.id]].delete();
+                //}catch(e){console.log(e);} //delete last message, deactivated for now @tyo
+                try {
+                    delete data.message[data.chessusr[chessdata.init.id]];
+                } catch (e) { console.log(e); }
+                let p = chesscheck(chessdata.data, (chessdata.turn + 0) % 2, chessdata.extra);
+                let g = checkmate(chessdata.data, (chessdata.turn + 0) % 2, chessdata.extra);
+                let t = "";
+                if (p > -1) {
+                    if (g == 1) {
+                        if ((chessdata.turn + chessdata.color) % 2)
+                            s = `${chessdata.init} won against\n${chessdata.usr} by checkmate.`;
+                        else
+                            s = `${chessdata.usr} won against\n${chessdata.init} by checkmate.`;
+                        if (chessdata.color)
+                            await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.usr.username, chessdata.init.username, (chessdata.turn + 1) % 2 + 2, chessdata.taken, message.id, data.chessusr[message.author.id], 1);
+                        else
+                            await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.init.username, chessdata.usr.username, (chessdata.turn + 1) % 2 + 2, chessdata.taken, message.id, data.chessusr[message.author.id], 1);
+                        let m = await message.channel.send({ content: s, files: [`./${message.id}.png`] });
+                        fs.unlinkSync(`./${message.id}.png`);
+                        chessgif(data.chessusr[message.author.id], m);
+                        let temp = JSON.parse(JSON.stringify(data.chessusr[message.author.id]));
+                        try {
+                            delete data.chessusr[chessdata.init.id];
+                        } catch (e) { console.log(e); }
+                        try {
+                            delete data.chessusr[chessdata.usr.id];
+                        } catch (e) { console.log(e); }
+                        try {
+                            delete data.chess[temp];
+                        } catch (e) { console.log(e); }
+                        return;
+                    } else
+                        t = ' Check.';
+                }
+                else {
+                    if (g == 1) {
+                        s = `Draw between ${chessdata.init}\nand ${chessdata.usr}.`;
+                        if (chessdata.color)
+                            await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.usr.username, chessdata.init.username, 4, chessdata.taken, message.id, data.chessusr[message.author.id], 1);
+                        else
+                            await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.init.username, chessdata.usr.username, 4, chessdata.taken, message.id, data.chessusr[message.author.id], 1);
+                        let m = await message.channel.send({ content: s, files: [`./${message.id}.png`] });
+                        fs.unlinkSync(`./${message.id}.png`);
+                        chessgif(data.chessusr[message.author.id], m);
+                        let temp = JSON.parse(JSON.stringify(data.chessusr[message.author.id]));
+                        try {
+                            delete data.chessusr[chessdata.init.id];
+                        } catch (e) { console.log(e); }
+                        try {
+                            delete data.chessusr[chessdata.usr.id];
+                        } catch (e) { console.log(e); }
+                        try {
+                            delete data.chess[temp];
+                        } catch (e) { console.log(e); }
+                        return;
+                    }
+                }
+                if (chessdata.color)
+                    await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.usr.username, chessdata.init.username, chessdata.turn, chessdata.taken, message.id, data.chessusr[message.author.id], 1);
+                else
+                    await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.init.username, chessdata.usr.username, chessdata.turn, chessdata.taken, message.id, data.chessusr[message.author.id], 1);
+                if (chessdata.turn == 1)
+                    s += `It's ⬛`;
+                else
+                    s += `It's ⬜`;
+                if ((chessdata.turn + chessdata.color) % 2) {
+                    s += `${chessdata.usr}'s turn.`;
+                }
+                else {
+                    s += `${chessdata.init}'s turn.`;
+                }
+                s += t;
+                let sent = await message.channel.send({ content: s, files: [`./${message.id}.png`] });
+                fs.renameSync(`./${data.chessusr[message.author.id]}`, `./${sent.id}`);
+                fs.unlinkSync(`./${message.id}.png`);
+                data.chess[sent.id] = JSON.parse(JSON.stringify(chessdata));
+                data.chess[sent.id].time = new Date().getTime();
+                data.chess[sent.id].channel = message.channel.id;
+                data.message[sent.id] = sent;
+                delete data.chess[data.chessusr[message.author.id]];
+                data.chessusr[chessdata.usr.id] = sent.id;
+                data.chessusr[chessdata.init.id] = sent.id;
+                await client.users.fetch(data.chess[sent.id].usr.id);
+                await client.users.fetch(data.chess[sent.id].init.id);
+                data.chess[sent.id].usr = client.users.cache.get(data.chess[sent.id].usr.id);
+                data.chess[sent.id].init = client.users.cache.get(data.chess[sent.id].init.id);
+        }
+    }
+    else if (command == 'resign') {
+        if (data.chessusr[message.author.id] == undefined) {
+            message.channel.send(`You do not have an active game,\n${message.author}.`);
+            return;
+        }
+        //try{
+        //    data.message[data.chessusr[message.author.id]].delete();
+        //}catch(e){console.log(e);};
+        if (data.chess[data.chessusr[message.author.id]].init.id == message.author.id) {
+            if (data.chess[data.chessusr[message.author.id]].color)
+                await chessimg(data.chess[data.chessusr[message.author.id]].data, [-1, -1, -1, -1], data.chess[data.chessusr[message.author.id]].extra, data.chess[data.chessusr[message.author.id]].usr.username, data.chess[data.chessusr[message.author.id]].init.username, 2, data.chess[data.chessusr[message.author.id]].taken, message.id, data.chessusr[message.author.id], 1);
+            else
+                await chessimg(data.chess[data.chessusr[message.author.id]].data, [-1, -1, -1, -1], data.chess[data.chessusr[message.author.id]].extra, data.chess[data.chessusr[message.author.id]].init.username, data.chess[data.chessusr[message.author.id]].usr.username, 3, data.chess[data.chessusr[message.author.id]].taken, message.id, data.chessusr[message.author.id], 1);
+            let m = await message.channel.send({ content: `The winner is ${data.chess[data.chessusr[message.author.id]].usr},\n${data.chess[data.chessusr[message.author.id]].init} resigned.`, files: [`./${message.id}.png`] });
+            fs.unlinkSync(`./${message.id}.png`);
+            chessgif(data.chessusr[message.author.id], m);
+        }
+        else if (data.chess[data.chessusr[message.author.id]].usr.id == message.author.id) {
+            if (data.chess[data.chessusr[message.author.id]].color)
+                await chessimg(data.chess[data.chessusr[message.author.id]].data, [-1, -1, -1, -1], data.chess[data.chessusr[message.author.id]].extra, data.chess[data.chessusr[message.author.id]].usr.username, data.chess[data.chessusr[message.author.id]].init.username, 3, data.chess[data.chessusr[message.author.id]].taken, message.id, data.chessusr[message.author.id], 1);
+            else
+                await chessimg(data.chess[data.chessusr[message.author.id]].data, [-1, -1, -1, -1], data.chess[data.chessusr[message.author.id]].extra, data.chess[data.chessusr[message.author.id]].init.username, data.chess[data.chessusr[message.author.id]].usr.username, 2, data.chess[data.chessusr[message.author.id]].taken, message.id, data.chessusr[message.author.id], 1);
+            let m = await message.channel.send({ content: `The winner is ${data.chess[data.chessusr[message.author.id]].init},\n${data.chess[data.chessusr[message.author.id]].usr} resigned.`, files: [`./${message.id}.png`] });
+            fs.unlinkSync(`./${message.id}.png`);
+            chessgif(data.chessusr[message.author.id], m);
+        }
+        try {
+            delete data.message[data.chessusr[data.chess[data.chessusr[message.author.id]].init.id]];
+        } catch (e) { console.log(e); }
+        let temp = JSON.parse(JSON.stringify(data.chessusr[message.author.id]));
+        try {
+            delete data.chessusr[data.chess[temp].usr.id];
+        } catch (e) { console.log(e); }
+        try {
+            delete data.chessusr[data.chess[temp].init.id];
+        } catch (e) { console.log(e); }
+        try {
+            delete data.chess[temp];
+        } catch (e) { console.log(e); }
+    }
+    else if (command == 'draw' || command == 'd') {
+        if (data.chessusr[message.author.id] == undefined) {
+            message.channel.send(`You do not have an active game,\n${message.author}.`);
+            return;
+        }
+        if (data.chess[data.chessusr[message.author.id]].init.id == message.author.id) {
+            if (data.chess[data.chessusr[message.author.id]].draw[1] != 0) {
+                if (data.chess[data.chessusr[message.author.id]].color)
+                    await chessimg(data.chess[data.chessusr[message.author.id]].data, [-1, -1, -1, -1], data.chess[data.chessusr[message.author.id]].extra, data.chess[data.chessusr[message.author.id]].usr.username, data.chess[data.chessusr[message.author.id]].init.username, 4, data.chess[data.chessusr[message.author.id]].taken, message.id, data.chessusr[message.author.id], 1);
+                else
+                    await chessimg(data.chess[data.chessusr[message.author.id]].data, [-1, -1, -1, -1], data.chess[data.chessusr[message.author.id]].extra, data.chess[data.chessusr[message.author.id]].init.username, data.chess[data.chessusr[message.author.id]].usr.username, 4, data.chess[data.chessusr[message.author.id]].taken, message.id, data.chessusr[message.author.id], 1);
+                let m = await message.channel.send({ content: `Draw between ${data.chess[data.chessusr[message.author.id]].init}\nand ${data.chess[data.chessusr[message.author.id]].usr}.`, files: [`./${message.id}.png`] });
+                fs.unlinkSync(`./${message.id}.png`);
+                chessgif(data.chessusr[message.author.id], m);
+                try {
+                    delete data.message[data.chessusr[data.chess[data.chessusr[message.author.id]].init.id]];
+                } catch (e) { console.log(e); }
+                let temp = JSON.parse(JSON.stringify(data.chessusr[message.author.id]));
+                try {
+                    delete data.chessusr[data.chess[temp].usr.id];
+                } catch (e) { console.log(e); }
+                try {
+                    delete data.chessusr[data.chess[temp].init.id];
+                } catch (e) { console.log(e); }
+                try {
+                    delete data.chess[temp];
+                } catch (e) { console.log(e); }
+                return;
+            }
+            if (data.chess[data.chessusr[message.author.id]].draw[0] != 0) {
+                message.channel.send(`You already offered a draw,\n${message.author}.`);
+                return;
+            }
+            const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`da${data.chess[data.chessusr[message.author.id]].usr.id}`).setLabel('✓').setStyle(ButtonStyle.Success), new ButtonBuilder().setCustomId(`dr${data.chess[data.chessusr[message.author.id]].usr.id}`).setLabel('✗').setStyle(ButtonStyle.Danger));
+            let msg = await message.channel.send({ content: `${message.author} has offered you a draw, ${data.chess[data.chessusr[message.author.id]].usr}.\nDo you accept?`, components: [r1] });
+            data.chess[data.chessusr[message.author.id]].draw[0] = msg.id;
+            data.message[msg.id] = msg;
+        }
+        else {
+            if (data.chess[data.chessusr[message.author.id]].draw[0] != 0) {
+                if (data.chess[data.chessusr[message.author.id]].color)
+                    await chessimg(data.chess[data.chessusr[message.author.id]].data, [-1, -1, -1, -1], data.chess[data.chessusr[message.author.id]].extra, data.chess[data.chessusr[message.author.id]].usr.username, data.chess[data.chessusr[message.author.id]].init.username, 4, data.chess[data.chessusr[message.author.id]].taken, message.id, data.chessusr[message.author.id], 1);
+                else
+                    await chessimg(data.chess[data.chessusr[message.author.id]].data, [-1, -1, -1, -1], data.chess[data.chessusr[message.author.id]].extra, data.chess[data.chessusr[message.author.id]].init.username, data.chess[data.chessusr[message.author.id]].usr.username, 4, data.chess[data.chessusr[message.author.id]].taken, message.id, data.chessusr[message.author.id], 1);
+                let m = await message.channel.send({ content: `Draw between ${data.chess[data.chessusr[message.author.id]].init}\nand ${data.chess[data.chessusr[message.author.id]].usr}.`, files: [`./${message.id}.png`] });
+                fs.unlinkSync(`./${message.id}.png`);
+                chessgif(data.chessusr[message.author.id], m);
+                try {
+                    delete data.message[data.chessusr[data.chess[data.chessusr[message.author.id]].init.id]];
+                } catch (e) { console.log(e); }
+                let temp = JSON.parse(JSON.stringify(data.chessusr[message.author.id]));
+                try {
+                    delete data.chessusr[data.chess[temp].usr.id];
+                } catch (e) { console.log(e); }
+                try {
+                    delete data.chessusr[data.chess[temp].init.id];
+                } catch (e) { console.log(e); }
+                try {
+                    delete data.chess[temp];
+                } catch (e) { console.log(e); }
+                return;
+            }
+            if (data.chess[data.chessusr[message.author.id]].draw[1] != 0) {
+                message.channel.send(`You already offered a draw,\n${message.author}.`);
+                return;
+            }
+            const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`da${data.chess[data.chessusr[message.author.id]].init.id}`).setLabel('✓').setStyle(ButtonStyle.Success), new ButtonBuilder().setCustomId(`dr${data.chess[data.chessusr[message.author.id]].init.id}`).setLabel('✗').setStyle(ButtonStyle.Danger));
+            let msg = await message.channel.send({ content: `${message.author} has offered you a draw, ${data.chess[data.chessusr[message.author.id]].init}.\nDo you accept?`, components: [r1] });
+            data.chess[data.chessusr[message.author.id]].draw[1] = msg.id;
+            data.message[msg.id] = msg;
+        }
+    }
+    else if (command == 'r' || command == 'roll') {
+        let a = '1d2';
+        let nice = '';
+        let e = '';
+        try {
+            a = args.shift().toLowerCase();
+        } catch (e) { };
+        if (!a.includes('d'))
+            a = '1d' + a;
+        if (a.startsWith('d'))
+            a = '1' + a;
+        let b = a.split('d');
+        if (b.length != 2) {
+            message.channel.send(`Please enter a valid command using ${conf.prefix}r/roll ([n rolls]**d**)[n sides(+[add n])],\n${message.author}.`);
+            return;
+        }
+        b[2] = 0;
+        if (b[1].includes('+')) {
+            let c = b[1].split('+');
+            if (c.length != 2 || !/^\d+$/.test(c[0]) || !/^\d+$/.test(c[1])) {
+                message.channel.send(`Please enter a valid command using ${conf.prefix}r/roll ([n rolls]**d**)[n sides(+[add n])],\n${message.author}.`);
+                return;
+            }
+            b[1] = parseInt(c[0]);
+            b[2] = parseInt(c[1]);
+        }
+        else if (b[1].includes('-')) {
+            let c = b[1].split('-');
+            if (c.length != 2 || !/^\d+$/.test(c[0]) || !/^\d+$/.test(c[1])) {
+                message.channel.send(`Please enter a valid command using ${conf.prefix}r/roll ([n rolls]**d**)[n sides(+[add n])],\n${message.author}.`);
+                return;
+            }
+            b[1] = parseInt(c[0]);
+            b[2] -= parseInt(c[1]);
+        }
+        b[2] += 1;
+        if (!/^\d+$/.test(b[0]) || !/^\d+$/.test(b[1])) {
+            message.channel.send(`Please enter a valid command using ${conf.prefix}r/roll ([n rolls]**d**)[n sides(+[add n])],\n${message.author}.`);
+            return;
+        }
+        if (b[0] > 1000000) {
+            message.channel.send(`Please refrain from using more than 1M rolls,\n${message.author}.`);
+            return;
+        }
+        if (b[1] > 1000000000000) {
+            message.channel.send(`Please refrain from rolling more than 1T-sided dices,\n${message.author}.`);
+            return;
+        }
+        if (b[0] < 1) {
+            message.channel.send(`I did not roll the dice.`)
+            return;
+        }
+        if (b[1] < 1) {
+            message.channel.send(`I cannot roll a dice that does not exist.`)
+            return;
+        }
+        b[1] == 42 || b[1] == 69 || b[1] == 420 ? nice = 'n' : nice = 'd';
+        e = `${b[2] > 1 ? `(adding ${b[2] - 1}) ` : ''}`;
+        e = `${b[2] < 1 ? `(subtracting ${b[2] - 1}) ` : e}`;
+        if (b[0] > 100) {
+            let r = 0;
+            for (let i = 0; i < b[0]; i++) {
+                r += random(b[1]) + b[2];
+            }
+            message.channel.send(`I rolled a ${b[1]} sided ${nice}ice ${b[0]} times ${e}and got\n**${r}**.`);
+        }
+        else {
+            let r = 0;
+            let s = [];
+            for (let i = 0; i < b[0]; i++) {
+                s.push(random(b[1]) + b[2]);
+                r += s[i];
+            }
+            let s2 = s.join(' ');
+            if (b[0] == 1)
+                message.channel.send(`I rolled a ${b[1]} sided ${nice}ice ${e}and got\n**${r}**.`);
+            else if (b[0] == 2)
+                message.channel.send(`I rolled a ${b[1]} sided ${nice}ice twice ${e}and got\n${s2}\n-----\n**${r}**.`);
+            else if (b[0] == 3)
+                message.channel.send(`I rolled a ${b[1]} sided ${nice}ice thrice ${e}and got\n${s2}\n-----\n**${r}**.`);
+            else
+                message.channel.send(`I rolled a ${b[1]} sided ${nice}ice ${b[0]} times ${e}and got\n${s2}\n-----\n**${r}**.`);
+        }
+    }
+    else if (command == 'w' || command == 'welcome') {
+        let a = args.shift();
+        if (a == undefined) {
+            message.channel.send(`Please specify a command,\n${message.author}.`);
+            return;
+        }
+        a = a.toLowerCase();
+        switch (a) {
+            case 's':
+                message.channel.send(`Set Channel for welcome-messages to ${message.channel}.`);
+                wchan = message.channel;
+                conf.wel = wchan.id;
+                break;
+            case 'g':
+                message.channel.send(`Channel for welcome-messages is ${wchan}.`);
+                break;
+            default:
+                message.channel.send(`Please specify a valid command,\n${message.author}.`);
+                break;
+        }
+    }
+    else if (command == 'xkcd' || command == 'x') {
+        let a = args.shift();
+        if (a == undefined) {
+            message.channel.send(`Please specify a command,\n${message.author}.`);
+            return;
+        }
+        a = a.toLowerCase();
+        if (parseInt(a) != NaN || a == 'random' || a == 'r') {
+            let r;
+            let l;
+            if (parseInt(a) > 0) {
+                l = 'https://xkcd.com/' + a;
+            }
+            else if (a == 'random' || a == 'r') {
+                l = 'https://c.xkcd.com/random/comic/';
+            }
+            try {
+                r = await axios.get(l);
+            } catch (e) {
+                return message.channel.send('Error in fetching');
+            }
+            if (r == undefined || r.status != 200) {
+                return message.channel.send('Error in fetching');
+            } else {
+                let d = r.data;
+                let g = d.indexOf('<img src="//imgs.xkcd.com/comics');
+                let b = d.substring(d.indexOf('/', g), d.indexOf('" title="', g)).replace('//imgs.xkcd.com/comics/', '');
+                let c = d.substring(d.indexOf('" title="', g) + 9, d.indexOf('" alt="', d.indexOf('" title="', g) + 10)).replaceAll('&#39;', '\'');
+                let e = d.substring(d.indexOf('" alt="', g) + 7, d.indexOf('"', d.indexOf('" alt="', g) + 8));
+                let f = d.substring(d.indexOf('<meta property="og:url" content="') + 33, d.indexOf('">', d.indexOf('<meta property="og:url" content="') + 33));
+                const embed = new EmbedBuilder()
+                    .setColor('#1a57f0')
+                    .setTitle(e)
+                    .setURL(f)
+                    .setDescription(c)
+                    .setImage('https://imgs.xkcd.com/comics/' + b)
+                    .setFooter({ text: `#${f.replace('https://xkcd.com/', '').replace('/', '')}` })
+                    .setTimestamp();
+                return message.channel.send({ embeds: [embed] });
+            }
+        }
+        switch (a) {
+            case 's':
+                message.channel.send(`Set Channel for the latest xkcd to ${message.channel}.`);
+                xchan = message.channel;
+                conf.xkcd = xchan.id;
+                break;
+            case 'g':
+                message.channel.send(`Channel for the latest xkcd is ${xchan}.`);
+                break;
+            default:
+                message.channel.send(`Please specify a valid command,\n${message.author}.`);
+                break;
+        }
+    }
+    else if (command == 'epic' || command == 'e') {
+        let a = args.shift();
+        if (a == undefined) {
+            message.channel.send(`Please specify a command,\n${message.author}.`);
+            return;
+        }
+        a = a.toLowerCase();
+        switch (a) {
+            case 's':
+                echan = message.channel;
+                conf.epic = echan.id;
+                message.channel.send(`Set Channel for free games on EpicGames and Steam to ${message.channel}.`);
+                break;
+            case 'g':
+                message.channel.send(`Channel for free games on EpicGames and Steam is ${echan}.`);
+                break;
+            case 'p': case 'ping':
+                if (data.epicusr[message.author.id] == undefined) {
+                    data.epicusr[message.author.id] = message.author.id.toString();
+                    message.channel.send(`Added ${message.author} to get pinged for free games on EpicGames and Steam.`);
+                }
+                else {
+                    delete data.epicusr[message.author.id];
+                    message.channel.send(`${message.author} will not get pinged for free games on EpicGames and Steam.`);
+                }
+                break;
+            default:
+                message.channel.send(`Please specify a valid command,\n${message.author}.`);
+                break;
+        }
+    }
+    else if (command == 'mine' || command == 'minesweeper') {
+        let a = args.shift();
+        if (a == undefined) {
+            message.channel.send(`Please specify a valid width using ${conf.prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
+            return;
+        }
+        a = a.toLowerCase();
+        let b = args.shift();
+        if (a == undefined) {
+            message.channel.send(`Please specify a valid heigth using ${conf.prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
+            return;
+        }
+        b = b.toLowerCase();
+        let c = args.shift();
+        if (a == undefined) {
+            message.channel.send(`Please specify a valid amount of mines using ${conf.prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
+            return;
+        }
+        c = c.toLowerCase();
+        if (!/^\d+$/.test(a)) {
+            message.channel.send(`Please specify a valid width using ${conf.prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
+            return;
+        }
+        if (!/^\d+$/.test(b)) {
+            message.channel.send(`Please specify a valid heigth using ${conf.prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
+            return;
+        }
+        if (!/^\d+$/.test(c)) {
+            message.channel.send(`Please specify a valid amount of mines using ${conf.prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
+            return;
+        }
+        if (a * b < c) {
+            message.channel.send(`Too many mines,\n${message.author}.\nThis response was provided by Github Copilot.`);
+            return;
+        }
+        if (a > 25 || b > 25) {
+            message.channel.send(`Too big,\n${message.author}.\nPlease use a widthand height of 25 or less.\nThis response was also completely provided by Github Copilot.`);
+            return;
+        }
+        a = parseInt(a);
+        b = parseInt(b);
+        c = parseInt(c);
+        let d = new Array();
+        for (let i = 0; i < a * b; i++) {
+            d.push(0);
+        }
+        for (let i = 0; i < c; i++) {
+            let e = random(a * b);
+            while (d[e] == -1) {
+                e = random(a * b);
+            }
+            d[e] = -1;
+        }
+        for (let i = 0; i < d.length; i++) {
+            if (d[i] == -1) {
+                if (i % a != 0) {
+                    if (d[i - 1] != -1) {
+                        d[i - 1]++;
+                    }
+                    if (i - a - 1 >= 0) {
+                        if (d[i - a - 1] != -1) {
+                            d[i - a - 1]++;
+                        }
+                    }
+                    if (i + a - 1 < d.length) {
+                        if (d[i + a - 1] != -1) {
+                            d[i + a - 1]++;
+                        }
+                    }
+                }
+                if (i % a != a - 1) {
+                    if (d[i + 1] != -1) {
+                        d[i + 1]++;
+                    }
+                    if (i - a + 1 >= 0) {
+                        if (d[i - a + 1] != -1) {
+                            d[i - a + 1]++;
+                        }
+                    }
+                    if (i + a + 1 < d.length) {
+                        if (d[i + a + 1] != -1) {
+                            d[i + a + 1]++;
+                        }
+                    }
+                }
+                if (i - a >= 0) {
+                    if (d[i - a] != -1) {
+                        d[i - a]++;
+                    }
+                }
+                if (i + a < d.length) {
+                    if (d[i + a] != -1) {
+                        d[i + a]++;
+                    }
+                }
+            }
+        }
+        let s = '';
+        let l = -a;
+        s += `${a}x${b} Minesweeper with ${c} Mines:`;
+        for (let i = 0; i < d.length; i++) {
+            if (i % a == 0) {
+                s += '\n';
+                l += a;
+                if ((l + a) % 99 < a) {
+                    message.channel.send(s);
+                    s = '';
+                    l = 0;
+                }
+            }
+            switch (d[i]) {
+                case -1:
+                    s += '||:bomb:||';
+                    break;
+                case 0:
+                    s += '||:zero:||';
+                    break;
+                case 1:
+                    s += '||:one:||';
+                    break;
+                case 2:
+                    s += '||:two:||';
+                    break;
+                case 3:
+                    s += '||:three:||';
+                    break;
+                case 4:
+                    s += '||:four:||';
+                    break;
+                case 5:
+                    s += '||:five:||';
+                    break;
+                case 6:
+                    s += '||:six:||';
+                    break;
+                case 7:
+                    s += '||:seven:||';
+                    break;
+                case 8:
+                    s += '||:eight:||';
+                    break;
+            }
+        }
+        message.channel.send(s);
+        if (c > 25) {
+            let q = '';
+            let p = 0;
+            s = '';
+            for (let i = 0; i < a; i++) {
+                let e = 0;
+                for (let j = 0; j < b; j++) {
+                    if (d[i + j * a] == -1) {
+                        e++;
+                    }
+                }
+                switch (e % 10) {
+                    case 0:
+                        s += '||:zero:||';
+                        break;
+                    case 1:
+                        s += '||:one:||';
+                        break;
+                    case 2:
+                        s += '||:two:||';
+                        break;
+                    case 3:
+                        s += '||:three:||';
+                        break;
+                    case 4:
+                        s += '||:four:||';
+                        break;
+                    case 5:
+                        s += '||:five:||';
+                        break;
+                    case 6:
+                        s += '||:six:||';
+                        break;
+                    case 7:
+                        s += '||:seven:||';
+                        break;
+                    case 8:
+                        s += '||:eight:||';
+                        break;
+                    case 9:
+                        s += '||:nine:||';
+                        break;
+                }
+                switch ((e - (e % 10)) / 10) {
+                    case 0:
+                        q += '||:zero:||';
+                        break;
+                    case 1:
+                        q += '||:one:||';
+                        p++;
+                        break;
+                    case 2:
+                        q += '||:two:||';
+                        p++;
+                        break;
+                    case 3:
+                        q += '||:three:||';
+                        p++;
+                        break;
+                    case 4:
+                        q += '||:four:||';
+                        p++;
+                        break;
+                    case 5:
+                        q += '||:five:||';
+                        p++;
+                        break;
+                    case 6:
+                        q += '||:six:||';
+                        p++;
+                        break;
+                    case 7:
+                        q += '||:seven:||';
+                        p++;
+                        break;
+                    case 8:
+                        q += '||:eight:||';
+                        p++;
+                        break;
+                    case 9:
+                        q += '||:nine:||';
+                        p++;
+                        break;
+                }
+            }
+            if (p > 0) {
+                s = `Checksums for each column:\n${q}\n${s}`;
+            }
+            else {
+                s = `Checksums for each column:\n${s}`;
+            }
+            message.channel.send(s);
+        }
+    }
+    else if (command == '8ball' || command == '8') {
+        if (args.length < 1) {
+            message.channel.send(`You need to ask a question after the command.\n${message.author}`)
+                .then(async msg => {
+                    await sleep(10000);
+                    msg.delete();
+                });
+            return;
+        }
+        let a = random(20);
+        let b = '';
+        switch (a) {
+            case 0:
+                b = ':green_circle: It is certain.';
+                break;
+            case 1:
+                b = ':green_circle: It is decidedly so.';
+                break;
+            case 2:
+                b = ':green_circle: Without a doubt.';
+                break;
+            case 3:
+                b = ':green_circle: Yes – definitely.';
+                break;
+            case 4:
+                b = ':green_circle: You may rely on it.';
+                break;
+            case 5:
+                b = ':green_circle: As I see it, yes.';
+                break;
+            case 6:
+                b = ':green_circle: Most likely.';
+                break;
+            case 7:
+                b = ':green_circle: Outlook good.';
+                break;
+            case 8:
+                b = ':green_circle: Yes.';
+                break;
+            case 9:
+                b = ':green_circle: Signs point to yes.';
+                break;
+            case 10: case 11:
+                b = ':yellow_circle: Reply hazy, try again.';
+                break;
+            case 12: case 13:
+                b = ':yellow_circle: Ask again later.';
+                break;
+            case 14: case 15:
+                b = ':yellow_circle: Better not tell you now.';
+                break;
+            case 16: case 17:
+                b = ':yellow_circle: Cannot predict now.';
+                break;
+            case 18: case 19:
+                b = ':yellow_circle: Concentrate and ask again.';
+                break;
+            case 20: case 21:
+                b = ':red_circle: Don’t count on it.';
+                break;
+            case 22: case 23:
+                b = ':red_circle: My reply is no.';
+                break;
+            case 24: case 25:
+                b = ':red_circle: My sources say no.';
+                break;
+            case 26: case 27:
+                b = ':red_circle: Outlook not so good.';
+                break;
+            case 28: case 29:
+                b = ':red_circle: Very doubtful.';
+                break;
+        }
+        message.channel.send(b);
+    }
+    else if (command == 'fortune' || command == 'f') {
+        const f = fs.readFileSync('./fortune.txt', 'utf8');
+        let r = 0;
+        f.split(/\r?\n/).forEach(line => {
+            r++;
+        });
+        r = random(r);
+        f.split(/\r?\n/).forEach(line => {
+            if (!r)
+                message.channel.send(line);
+            r--;
+        });
+    }
+    else if (command == 'wiki') {
+        let a = args.shift();
+        if (a == undefined) {
+            message.channel.send(`Please specify a Wiki you want to search in,\n${message.author}.`);
+            return;
+        }
+        a = a.toLowerCase();
+        let l = '';
+        let m = '';
+        let s = '';
+        let b = '';
+        let c = '';
+        let r = '';
+        let t = '';
+        if (a.length == 2) {
+            t = a;
+            a = args.shift();
+            if (a == undefined) {
+                message.channel.send(`Please specify a Wiki you want to search in,\n${message.author}.`);
+                return;
+            }
+            a = a.toLowerCase();
+        }
+        else {
+            t = 'en';
+        }
+        switch (a) {
+            case 'wikipedia':
+                l = `${t}.wikipedia.org/w`;
+                m = `${t}.wikipedia.org`;
+                b = args;
+                if (b == undefined) {
+                    message.channel.send(`Please specify a Search Term,\n${message.author}.`);
+                    return;
+                }
+                s = b;
+                break;
+            case 'fandom':
+                b = args.shift();
+                if (b == undefined) {
+                    message.channel.send(`Please specify a Fandom,\n${message.author}.`);
+                    return;
+                }
+                b = b.toLowerCase();
+                c = args;
+                if (c == undefined) {
+                    message.channel.send(`Please specify a Search Term,\n${message.author}.`);
+                    return;
+                }
+                s = c;
+                l = `${b}.fandom.com/${t}`;
+                m = `${b}.fandom.com/${t}`;
+                r = await axios.get(`https://${l}/`);
+                if (r.status == 404) {
+                    message.channel.send(`The Fandom you specified does not exist,\n${message.author}.`);
+                    return;
+                }
+                break;
+            default:
+                l = `${t}.wikipedia.org/w`;
+                m = `${t}.wikipedia.org`;
+                b = args;
+                b.unshift(a);
+                if (b == undefined) {
+                    message.channel.send(`Please specify a Search Term,\n${message.author}.`);
+                    return;
+                }
+                s = b;
+                break;
+        }
+        let res = '';
+        try {
+            res = await axios.get(`https://${l}/api.php?action=query&list=search&srsearch=${s}&format=json`);
+        } catch (e) { };
+        if (res == undefined || res == '' || res.status == 404) {
+            message.channel.send(`The Wiki you specified does not exist in that language,\n${message.author}.\n(listing available Languages coming soon:tm:)`);
+            return;
+        }
+        if (res.data.query.search.length == 0) {
+            let o = '';
+            while (s.length > 0) {
+                o += s.shift();
+                if (s.length > 0)
+                    o += ' ';
+            }
+            message.channel.send(`No results found for ${o},\n${message.author}.\nMaybe try a different language${a == 'fandom' ? ' or Fandom' : ''}?`);
+            return;
+        }
+        let res2 = await axios.get(`https://${l}/api.php?action=query&prop=revisions&pageids=${res.data.query.search[0].pageid}&rvslots=*&rvprop=content&formatversion=2&format=json`);
+        let d = '';
+        try {
+            d = parsewiki(res2.data.query.pages[0].revisions[0].slots.main.content, m);
+        } catch (e) {
+            message.channel.send(`Error in parsing wiki-page to embed,\n${message.author}.\nCertain pages may contain content the parser cannot handle yet, sorry.`);
+            return;
+        }
+        const emb = new EmbedBuilder()
+            .setColor('#1a57f0')
+            .setTitle(res2.data.query.pages[0].title.toString())
+            .setURL(`https://${m}/wiki/${res2.data.query.pages[0].title.replace(/ /g, '_')}`)
+            .setDescription(d)
+            .setFooter({ text: m });
+        message.channel.send({ content: ':warning:This feature is still a work in progress!', embeds: [emb] });
+    }
+    else if (command == 'help' || command == 'h') {
+        if (args[0] == 'play' || args[0] == 'p' || args[0] == 'player') {
+            message.channel.send(`i forgor 💀,\n${message.author}.`);
+            return;
+        }
+        const embed = new EmbedBuilder()
+            .setColor('#1a57f0')
+            .setTitle('Currently aviable commands:\n[] = required, () = optional')
+            .addFields(
+                { name: 'Help', value: `Use ${conf.prefix}help/${conf.prefix}h to show this message.` },
+                { name: 'Player', value: `Use ${conf.prefix}play/${conf.prefix}p (track name/link) to play a song.\nCurrently available are: YouTube, Spotify, SoundCloud, Vimeo, Facebook, Reverbnation and attachment links.\nClick **ℹ** beneath the player for info on the buttons and available commands.` },
+                { name: 'Soundboard', value: `Use ${conf.prefix}(sound)board/${conf.prefix}sb to open the Soundboard. You can also find it in the player. Alternatively use ${conf.prefix}de/${conf.prefix}ddr/${conf.prefix}su/${conf.prefix}db directly (there are a lot of aliases though).` },
+                { name: 'TicTacToe', value: `Initiate a game with ${conf.prefix}tictactoe/${conf.prefix}ttt/${conf.prefix}3 followed by pinging the opponent.` },
+                { name: 'Connect 4', value: `Initiate a game with ${conf.prefix}connect4/${conf.prefix}4win/${conf.prefix}4 followed by pinging the opponent.` },
+                { name: 'Chess', value: `Initiate a game with ${conf.prefix}chess/${conf.prefix}2 followed by pinging the opponent.\nUse ${conf.prefix}move/${conf.prefix}m [move from] [move to] to move your pieces.\nUse ${conf.prefix}resign to resign your game and ${conf.prefix}draw/${conf.prefix}d to offer a draw.` },
+                { name: 'Roll Dices', value: `Use ${conf.prefix}roll/${conf.prefix}r ([n times]**d**)[n sides(+[add n])] to roll some dices.` },
+                { name: '8Ball', value: `Use ${conf.prefix}8ball/${conf.prefix}8 followed by a question to get a response.` },
+                { name: 'Fortune Cookie', value: `Use ${conf.prefix}fortune/${conf.prefix}f to get a fortune cookie.` },
+                { name: 'MineSweeper', value: `Use ${conf.prefix}minesweeper/${conf.prefix}mine [width] [height] [amount of mines] to start a game.` },
+                { name: 'xkcd Feed', value: `Use ${conf.prefix}xkcd/${conf.prefix}x set/s in the desired channel to have the latest xckd comic posted there.\nUse ${conf.prefix}xkcd/${conf.prefix}x get/g to get the channel they are posted in.` },
+                { name: 'Free Games', value: `Use ${conf.prefix}epic/${conf.prefix}e ping/p to get pinged for free games.\nUse ${conf.prefix}epic/${conf.prefix}e set/s in the desired channel to have free games on EpicGames and Steam posted there.\nUse ${conf.prefix}epic/${conf.prefix}e get/g to get the channel they are posted in.` },
+                { name: 'Welcome Message', value: `Use ${conf.prefix}welcome/${conf.prefix}w set/s in the desired channel to have Welcome-messages posted there.\nUse ${conf.prefix}welcome/${conf.prefix}w get/g to get the channel they are posted in.` },
+                { name: 'Wikis', value: `Use ${conf.prefix}wiki (language) (wikipedia/fandom [fandom name]) [search term] to search for a wiki page.\nThis feature is still a work in progress.` }
+            );
+        message.channel.send({ embeds: [embed] });
+    }
+    else if (command == 'search' || command == 's') {
+        playaction('search', args.join(' '), message.channel, message.member);
+    }
+    else if (command == 'play' || command == 'p') {
+        playaction('play', args.join(' '), message.channel, message.member);
+    }
+    else if (command == 'skip') {
+        playaction('skip', args.join(' '), message.channel, message.member);
+    }
+    else if (command == 'take' || command == 'force') {
+        playaction('take', args.join(' '), message.channel, message.member);
+    }
+    else if (command == 'stop' || command == 'leave') {
+        playaction('leave', null, message.channel, message.member);
+    }
+    else if (command == 'prev' || command == 'previous') {
+        playaction('prev', null, message.channel, message.member);
+    }
+    else if (command == 'rem' || command == 'remove') {
+        playaction('rem', args.join(' '), message.channel, message.member);
+    }
+    else if (command == 'l' || command == 'list') {
+        playaction('list', args.join(' '), message.channel, message.member);
+    }
+    else if (command == 'shuffle' || command == 'sh') {
+        playaction('shuffle', null, message.channel, message.member);
+    }
+    else if (command == 'de' || command == 'deutsch' || command == 'deutschland') {
+        playaction('int', 'de', message.channel, message.member);
+    }
+    else if (command == 'ddr' || command == 'sonne' || command == 'sonnenschein') {
+        playaction('int', 'ddr', message.channel, message.member);
+    }
+    else if (command == 'su' || command == 'soviet' || command == 'comrade' || command == 'sovietcomrade' || command == 'communism' || command == 'communist' || command == 'russia' || command == 'russian') {
+        playaction('int', 'su', message.channel, message.member);
+    }
+    else if (command == 'db' || command == 'bahn' || command == 'deutsche bahn' || command == 'dbahn' || command == 's-bahn' || command == 'sbahn' || command == 'regio' || command == 'ice') {
+        playaction('int', 'db', message.channel, message.member);
+    }
+    else if (command == 'soviet earrape' || command == 'soviet extra' || command == 'earrape' || command == 'se' || command == 'east' || command == 'stalin' || command == 'gulag' || command == 'n1') {
+        playaction('int', 'se', message.channel, message.member);
+    }
+    else if (command == 'sb' || command == 'board' || command == 'soundboard') {
+        message.channel.send({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle('Soundboard:')
+                    .setColor('#1a57f0')
+            ], components: [
+                new ActionRowBuilder().addComponents(//🇩🇪🇩🇩🇷🇸🇺
+                    new ButtonBuilder().setCustomId('pp').setLabel('DE').setStyle(ButtonStyle.Danger).setDisabled(false),
+                    new ButtonBuilder().setCustomId('pq').setLabel('DR').setStyle(ButtonStyle.Danger).setDisabled(false),
+                    new ButtonBuilder().setCustomId('pr').setLabel('SU').setStyle(ButtonStyle.Danger).setDisabled(false),
+                    new ButtonBuilder().setCustomId('ps').setLabel('DB').setStyle(ButtonStyle.Danger).setDisabled(false),
+                    new ButtonBuilder().setCustomId('pt').setLabel('ⓈⓊ').setStyle(ButtonStyle.Danger).setDisabled(false)
+                )]
+        })
+    }
+    else if (command == 'filter') {
+        playaction('filter', args.shift(), message.channel, message.member);
+    }
+    else {
+        message.channel.send(`The command you specified does not exist, ${message.author}.\nUse ${conf.prefix}help to see all commands.`);
+    }
+})
+client.on('interactionCreate', async i => {
+    log.write(`${i.member.user.username}#${i.member.user.discriminator} [${i.customId}] in ${i.channel.name}#${i.channel.id} at ${new Intl.DateTimeFormat('en-GB', { dateStyle: 'full', timeStyle: 'short' }).format(new Date(i.createdTimestamp))}: (${i.message?.id}) ${i.message?.content}\n`);
+    if (i.isChatInputCommand()) {
+        const c = i.client.commands.get(i.commandName);
+        if (!c) {
+            console.log(`${i.commandName} not found`);
+            return;
+        }
+        try {
+            await c.execute(i);
+        } catch (e) {
+            console.log(e);
+            await i.reply({ content: 'Error rip lmao', ephemeral: true });
+        }
+    }
+    else if (i.isButton()) {
+        try {
+            await i.deferUpdate();
+        } catch (e) {
+            console.log(e);
+        }
+        const a = i.customId.charAt(0).toString();
+        let b;
+        let s = '';
+        let c;
+        switch (a) {
+            case 'a':
+                b = Number.parseInt(i.customId.charAt(1).toString());
+                if (data.ttt == undefined) return;
+                if (data.ttt[i.message.id] == undefined) return;
+                if (i.member.user.id != data.ttt[i.message.id].usr.id && i.member.user.id != data.ttt[i.message.id].init.id) return;
+                if (b == 9) {
+                    const r1 = new ActionRowBuilder().addComponents(setttt(data.ttt[i.message.id].data, '0').setDisabled(true), setttt(data.ttt[i.message.id].data, '1').setDisabled(true), setttt(data.ttt[i.message.id].data, '2').setDisabled(true));
+                    const r2 = new ActionRowBuilder().addComponents(setttt(data.ttt[i.message.id].data, '3').setDisabled(true), setttt(data.ttt[i.message.id].data, '4').setDisabled(true), setttt(data.ttt[i.message.id].data, '5').setDisabled(true));
+                    const r3 = new ActionRowBuilder().addComponents(setttt(data.ttt[i.message.id].data, '6').setDisabled(true), setttt(data.ttt[i.message.id].data, '7').setDisabled(true), setttt(data.ttt[i.message.id].data, '8').setDisabled(true));
+                    if (i.member.user.id == data.ttt[i.message.id].usr.id)
+                        i.message.edit({ content: `The winner is ${data.ttt[i.message.id].init},\n${data.ttt[i.message.id].usr} resigned.`, components: [r1, r2, r3] });
+                    if (i.member.user.id == data.ttt[i.message.id].init.id)
+                        i.message.edit({ content: `The winner is ${data.ttt[i.message.id].usr},\n${data.ttt[i.message.id].init} resigned.`, components: [r1, r2, r3] });
+                    delete data.ttt[i.message.id];
+                    return;
+                }
+                if (data.ttt[i.message.id].turn == 0) {
+                    if (i.member.user.id != data.ttt[i.message.id].init.id)
+                        return;
+                }
+                else {
+                    if (i.member.user.id != data.ttt[i.message.id].usr.id)
+                        return;
+                }
+                if (data.ttt[i.message.id].data[b] != 0)
+                    return;
+                data.ttt[i.message.id].data[b] = data.ttt[i.message.id].turn + 1;
+                c = await checkttt(data.ttt[i.message.id].data);
+                if (c == '9') {
+                    const r1 = new ActionRowBuilder().addComponents(setttt(data.ttt[i.message.id].data, '0').setDisabled(true), setttt(data.ttt[i.message.id].data, '1').setDisabled(true), setttt(data.ttt[i.message.id].data, '2').setDisabled(true));
+                    const r2 = new ActionRowBuilder().addComponents(setttt(data.ttt[i.message.id].data, '3').setDisabled(true), setttt(data.ttt[i.message.id].data, '4').setDisabled(true), setttt(data.ttt[i.message.id].data, '5').setDisabled(true));
+                    const r3 = new ActionRowBuilder().addComponents(setttt(data.ttt[i.message.id].data, '6').setDisabled(true), setttt(data.ttt[i.message.id].data, '7').setDisabled(true), setttt(data.ttt[i.message.id].data, '8').setDisabled(true));
+                    i.message.edit({ content: `Draw between ${data.ttt[i.message.id].init}\nand ${data.ttt[i.message.id].usr}.`, components: [r1, r2, r3] });
+                    delete data.ttt[i.message.id];
+                    return;
+                }
+                if (c != '0') {
+                    let d = [true, true, true, true, true, true, true, true, true];
+                    switch (c) {
+                        case '1': d[0] = false; d[1] = false; d[2] = false; break;
+                        case '2': d[3] = false; d[4] = false; d[5] = false; break;
+                        case '3': d[6] = false; d[7] = false; d[8] = false; break;
+                        case '4': d[0] = false; d[3] = false; d[6] = false; break;
+                        case '5': d[1] = false; d[4] = false; d[7] = false; break;
+                        case '6': d[2] = false; d[5] = false; d[8] = false; break;
+                        case '7': d[0] = false; d[4] = false; d[8] = false; break;
+                        case '8': d[2] = false; d[4] = false; d[6] = false; break;
+                    }
+                    const r1 = new ActionRowBuilder().addComponents(setttt(data.ttt[i.message.id].data, '0').setDisabled(d[0]), setttt(data.ttt[i.message.id].data, '1').setDisabled(d[1]), setttt(data.ttt[i.message.id].data, '2').setDisabled(d[2]));
+                    const r2 = new ActionRowBuilder().addComponents(setttt(data.ttt[i.message.id].data, '3').setDisabled(d[3]), setttt(data.ttt[i.message.id].data, '4').setDisabled(d[4]), setttt(data.ttt[i.message.id].data, '5').setDisabled(d[5]));
+                    const r3 = new ActionRowBuilder().addComponents(setttt(data.ttt[i.message.id].data, '6').setDisabled(d[6]), setttt(data.ttt[i.message.id].data, '7').setDisabled(d[7]), setttt(data.ttt[i.message.id].data, '8').setDisabled(d[8]));
+                    if (data.ttt[i.message.id].turn == 0)
+                        i.message.edit({ content: `${data.ttt[i.message.id].init} won against\n${data.ttt[i.message.id].usr}.`, components: [r1, r2, r3] });
+                    else
+                        i.message.edit({ content: `${data.ttt[i.message.id].usr} won against\n${data.ttt[i.message.id].init}.`, components: [r1, r2, r3] });
+                    delete data.ttt[i.message.id];
+                    return;
+                }
+                const r1 = new ActionRowBuilder().addComponents(setttt(data.ttt[i.message.id].data, '0'), setttt(data.ttt[i.message.id].data, '1'), setttt(data.ttt[i.message.id].data, '2'), new ButtonBuilder().setCustomId('a9').setLabel('🏳️').setStyle(ButtonStyle.Danger));
+                const r2 = new ActionRowBuilder().addComponents(setttt(data.ttt[i.message.id].data, '3'), setttt(data.ttt[i.message.id].data, '4'), setttt(data.ttt[i.message.id].data, '5'));
+                const r3 = new ActionRowBuilder().addComponents(setttt(data.ttt[i.message.id].data, '6'), setttt(data.ttt[i.message.id].data, '7'), setttt(data.ttt[i.message.id].data, '8'));
+                data.ttt[i.message.id].turn = (data.ttt[i.message.id].turn + 1) % 2;
+                if (!data.ttt[i.message.id].turn) {
+                    s += `It's ⭕${data.ttt[i.message.id].init}'s turn.`;
+                }
+                else {
+                    s += `It's ❌${data.ttt[i.message.id].usr}'s turn.`;
+                }
+                i.message.edit({ content: s, components: [r1, r2, r3] });
+                data.ttt[i.message.id].time = new Date().getTime();
+                break;
+            case 'b':
+                b = Number.parseInt(i.customId.charAt(1).toString());
+                if (data.con == undefined) return;
+                if (data.con[i.message.id] == undefined) return;
+                if (i.member.user.id != data.con[i.message.id].usr.id && i.member.user.id != data.con[i.message.id].init.id) return;
+                if (b == 7) {
+                    if (i.member.user.id == data.con[i.message.id].usr.id)
+                        s += `The winner is ${data.con[i.message.id].init},\n${data.con[i.message.id].usr} resigned.`;
+                    else if (i.member.user.id == data.con[i.message.id].init.id)
+                        s += `The winner is ${data.con[i.message.id].usr},\n${data.con[i.message.id].init} resigned.`;
+                    s += '\n```\n| 1  2  3  4  5  6  7|';
+                    for (let j = 0; j < 42; j++) {
+                        if (j % 7 == 0)
+                            s += '\n|';
+                        switch (data.con[i.message.id].data[j]) {
+                            case 0:
+                                s += '  |';
+                                break;
+                            case 1:
+                                s += ' o|';
+                                break;
+                            case 2:
+                                s += ' x|';
+                                break;
+                        }
+                    }
+                    s += '\n```';
+                    i.message.edit({ content: s, components: [] });
+                    delete data.con[i.message.id];
+                    return;
+                }
+                if (data.con[i.message.id].turn == 0) {
+                    if (i.member.user.id != data.con[i.message.id].init.id)
+                        return;
+                }
+                else {
+                    if (i.member.user.id != data.con[i.message.id].usr.id)
+                        return;
+                }
+                if (data.con[i.message.id].data[b] != 0)
+                    return;
+                for (let it = 0; it < 6; it++) {
+                    let d = 35 + b - it * 7;
+                    if (data.con[i.message.id].data[d] == 0) {
+                        data.con[i.message.id].data[d] = data.con[i.message.id].turn + 1;
+                        break;
+                    }
+                }
+                c = await checkcon(data.con[i.message.id].data);
+                data.con[i.message.id].turn = (data.con[i.message.id].turn + 1) % 2;
+                switch (c[0]) {
+                    case 0:
+                        if (data.con[i.message.id].turn == 0)
+                            s += `It's ⭕${data.con[i.message.id].init}'s turn.`;
+                        else
+                            s += `It's ❌${data.con[i.message.id].usr}'s turn.`;
+                        s += '\n```\n| 1  2  3  4  5  6  7|';
+                        for (let j = 0; j < 42; j++) {
+                            if (j % 7 == 0)
+                                s += '\n|';
+                            switch (data.con[i.message.id].data[j]) {
+                                case 0:
+                                    s += '  |';
+                                    break;
+                                case 1:
+                                    s += '⭕|';
+                                    break;
+                                case 2:
+                                    s += '❌|';
+                                    break;
+                            }
+                        }
+                        s += '\n```';
+                        const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('b0').setLabel('1').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b1').setLabel('2').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b2').setLabel('3').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b3').setLabel('4').setStyle(ButtonStyle.Secondary));
+                        const r2 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('b4').setLabel('5').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b5').setLabel('6').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b6').setLabel('7').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b7').setLabel('🏳️').setStyle(ButtonStyle.Danger));
+                        i.message.edit({ content: s, components: [r1, r2] });
+                        data.con[i.message.id].time = new Date().getTime();
+                        break;
+                    case 1:
+                        if (data.con[i.message.id].turn)
+                            s += `${data.con[i.message.id].init} won against\n${data.con[i.message.id].usr}.`;
+                        else
+                            s += `${data.con[i.message.id].usr} won against\n${data.con[i.message.id].init}.`;
+                        s += '\n```\n| 1  2  3  4  5  6  7|';
+                        for (let j = 0; j < 42; j++) {
+                            if (j % 7 == 0)
+                                s += '\n|';
+                            if (j == c[1] || j == c[2] || j == c[3] || j == c[4])
+                                switch (data.con[i.message.id].data[j]) {
+                                    case 1:
+                                        s += '⭕|';
+                                        break;
+                                    case 2:
+                                        s += '❌|';
+                                        break;
+                                }
+                            else
+                                switch (data.con[i.message.id].data[j]) {
+                                    case 0:
+                                        s += '  |';
+                                        break;
+                                    case 1:
+                                        s += ' o|';
+                                        break;
+                                    case 2:
+                                        s += ' x|';
+                                        break;
+                                }
+                        }
+                        s += '\n```';
+                        i.message.edit({ content: s, components: [] });
+                        delete data.con[i.message.id];
+                        break;
+                    case 2:
+                        s += `Draw between ${data.con[i.message.id].init}\nand ${data.con[i.message.id].usr}.`;
+                        s += '\n```\n| 1  2  3  4  5  6  7|';
+                        for (let j = 0; j < 42; j++) {
+                            if (j % 7 == 0)
+                                s += '\n|';
+                            switch (data.con[i.message.id].data[j]) {
+                                case 0:
+                                    s += '  |';
+                                    break;
+                                case 1:
+                                    s += ' o|';
+                                    break;
+                                case 2:
+                                    s += ' x|';
+                                    break;
+                            }
+                        }
+                        s += '\n```';
+                        i.message.edit({ content: s, components: [] });
+                        delete data.con[i.message.id];
+                        break;
+                }
+                break;
+            case 'd':
+                b = i.customId.toString().replace('da', '').replace('dr', '');
+                b = parseInt(b);
+                if (i.member.user.id != b) return;
+                if (data.chessusr == undefined || data.chessusr[i.member.user.id] == undefined) {
+                    i.message.edit({ content: 'This draw offer is deprecated.', components: [] });
+                    return;
+                }
+                if (i.customId.charAt(1).toString() == 'a') {
+                    i.message.edit({ content: 'The draw offer was accepted.', components: [] });
+                    if (data.chess[data.chessusr[i.member.user.id]].color)
+                        await chessimg(data.chess[data.chessusr[i.member.user.id]].data, [-1, -1, -1, -1], data.chess[data.chessusr[i.member.user.id]].extra, data.chess[data.chessusr[i.member.user.id]].usr.username, data.chess[data.chessusr[i.member.user.id]].init.username, 4, data.chess[data.chessusr[i.member.user.id]].taken, i.message.id, data.chessusr[i.member.user.id], 1);
+                    else
+                        await chessimg(data.chess[data.chessusr[i.member.user.id]].data, [-1, -1, -1, -1], data.chess[data.chessusr[i.member.user.id]].extra, data.chess[data.chessusr[i.member.user.id]].init.username, data.chess[data.chessusr[i.member.user.id]].usr.username, 4, data.chess[data.chessusr[i.member.user.id]].taken, i.message.id, data.chessusr[i.member.user.id], 1);
+                    let m = await i.message.channel.send({ content: `Draw between ${data.chess[data.chessusr[i.member.user.id]].init}\nand ${data.chess[data.chessusr[i.member.user.id]].usr}.`, files: [`./${i.message.id}.png`] });
+                    fs.unlinkSync(`./${i.message.id}.png`);
+                    chessgif(data.chessusr[i.member.user.id], m);
+                    try {
+                        delete data.message[data.chessusr[data.chess[data.chessusr[i.member.user.id]].init.id]];
+                    } catch (e) { console.log(e); }
+                    let temp = JSON.parse(JSON.stringify(data.chessusr[i.member.user.id]));
+                    try {
+                        delete data.chessusr[data.chess[temp].usr.id];
+                    } catch (e) { console.log(e); }
+                    try {
+                        delete data.chessusr[data.chess[temp].init.id];
+                    } catch (e) { console.log(e); }
+                    try {
+                        delete data.chess[temp];
+                    } catch (e) { console.log(e); }
+                    delete data.message[i.message.id];
+                }
+                if (i.customId.charAt(1).toString() == 'r') {
+                    i.message.edit({ content: 'The draw offer was rejected.', components: [] });
+                    if (data.chess[data.chessusr[i.member.user.id]].init.id == i.member.user.id)
+                        data.chess[data.chessusr[i.member.user.id]].draw[2] = 1;
+                    if (data.chess[data.chessusr[i.member.user.id]].usr.id == i.member.user.id)
+                        data.chess[data.chessusr[i.member.user.id]].draw[3] = 1;
+                }
+                break;
+            case 'e':
+                b = i.customId.charAt(1).toString();
+                if (b == 'p') {
+                    if (data.epicusr[i.member.user.id] == undefined) {
+                        data.epicusr[i.member.user.id] = i.member.user.id.toString();
+                        i.followUp({ content: 'You will now get pinged for free games', ephemeral: true });
+                    }
+                    else {
+                        delete data.epicusr[i.member.user.id];
+                        i.followUp({ content: 'You will not get pinged for free games', ephemeral: true });
+                    }
+                }
+                break;
+            case 'p':
+                //if (new Date().getHours() >= 23) {
+                //    return i.channel.send(`I have gone to sleep, good night ${i.member}`);
+                //}
+                b = i.customId.charAt(1).toString();
+                c = {
+                    'a': 'prev', 'b': 'pause', 'c': 'skip', 'd': 'queue', 'e': 'leave', 'f': 'info', 'g': 'expand', 'h': 'less', 'i': 'more',
+                    'j': 'voldw', 'k': 'volup', 'l': 'lyrics', 'm': 'shuffle', 'n': 'repeat', 'o': 'board', 'p': 'int', 'q': 'int', 'r': 'int',
+                    's': 'int', 't': 'int', 'u': 'info2', 'v': 'filter', 'w': 'filter', 'x': 'filter', 'y': 'filter', 'z': 'play'
+                }
+                let d = c[b];
+                let e = {
+                    'p': 'de', 'q': 'ddr', 'r': 'su', 's': 'db', 't': 'se',
+                    'v': 'earrape', 'w': '8D', 'x': '', 'y': 'reset', 'z': i.customId.slice(3, i.customId.length)
+                }
+                if (d == undefined) return;
+                playaction(d, e[b], i.channel, i.member);
+                break;
+        }
+    }
+});
+
+function checkmate(a, b, f) {
+    let d, e = 0;
+    if (b) {
+        d = 6; e = 13;
+    }
+    else {
+        d = 0; e = 7;
+    }
+    for (let i = 0; i < 64; i++) {
+        if (a[i] > d && a[i] < e) {
+            for (let j = 0; j < 64; j++) {
+                if (chessmove(a, i, j, b, f) == 2) {
+                    let c = JSON.parse(JSON.stringify(a));
+                    let g = JSON.parse(JSON.stringify(f));
+                    if (c[j] == 0)
+                        if (c[i] == 1 || c[i] == 7) {
+                            if (i - j == 7 || i - j == 9)
+                                c[j + 8] = 0;
+                            if (j - i == 7 || j - i == 9)
+                                c[j - 8] = 0;
+                        }
+                    c[j] = parseInt(c[i]);
+                    c[i] = 0;
+                    g[i] += 1;
+                    g.fill(0, 8, 15);
+                    g.fill(0, 48, 55);
+                    if (i > 7 && i < 16 && j > 23 && j < 32)
+                        g[i] = 1;
+                    if (i > 47 && i < 56 && j > 31 && j < 40)
+                        g[i] = 1;
+                    if (chesscheck(c, b, g) == -1) {
+                        //console.log(c, b, g); sometimes buggy like wtf
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+    return 1;
+}
+
+function chesscheck(a, b, f) {
+    let k = -1;
+    for (let i = 0; i < 64; i++) {
+        if (a[i] == 6 + b * 6)
+            k = i;
+    }
+    for (let i = 0; i < 64; i++) {
+        let t = chessmove(a, i, k, (b + 1) % 2, f);
+        if (t == 2) {
+            return k;
+        }
+    }
+    return -1;
+}
+
+function chessmove(a, b, c, d, e) {
+    if (b == c)
+        return 1;
+    if (a[b] == 0)
+        return 0;
+    if (d == 1) {
+        if (a[b] > 0 && a[b] < 7)
+            return 0;
+        if (a[c] > 6 && a[c] < 13)
+            return 1;
+    }
+    if (d == 0) {
+        if (a[b] > 6 && a[b] < 13)
+            return 0;
+        if (a[c] > 0 && a[c] < 7)
+            return 1;
+    }
+    let br = 8 - (b - (b % 8)) / 8;
+    let cr = 8 - (c - (c % 8)) / 8;
+    switch (a[b]) {
+        case 1:
+            if (br == 2 && b == c + 16 && a[c] == 0 && a[c + 8] == 0)
+                return 2;
+            if (b == c + 8 && a[c] == 0)
+                return 2;
+            if (b % 8 != 7 && b == c + 7)
+                if (a[c] != 0 || e[c - 8] == 1)
+                    return 2;
+            if (b % 8 != 0 && b == c + 9)
+                if (a[c] != 0 || e[c - 8] == 1)
+                    return 2;
+            break;
+        case 2: case 8:
+            if (br < 7 && b % 8 < 7 && c == b - 15)
+                return 2;
+            if (br < 8 && b % 8 < 6 && c == b - 6)
+                return 2;
+            if (br > 1 && b % 8 < 6 && c == b + 10)
+                return 2;
+            if (br > 2 && b % 8 < 7 && c == b + 17)
+                return 2;
+            if (br > 2 && b % 8 > 0 && c == b + 15)
+                return 2;
+            if (br > 1 && b % 8 > 1 && c == b + 6)
+                return 2;
+            if (br < 8 && b % 8 > 1 && c == b - 10)
+                return 2;
+            if (br < 7 && b % 8 > 0 && c == b - 17)
+                return 2;
+            break;
+        case 3: case 9:
+            if (Math.abs(cr - br) == Math.abs(c % 8 - b % 8)) {
+                let v = - (cr - br) / Math.abs(cr - br);
+                let h = (c % 8 - b % 8) / Math.abs(c % 8 - b % 8);
+                for (let i = b + v * 8 + h; i != c; i += v * 8 + h) {
+                    if (a[i] != 0)
+                        return 1;
+                }
+                return 2;
+            }
+            break;
+        case 4: case 10:
+            if (cr == br) {
+                if ((c - b) > 0) {
+                    for (let i = b + 1; i < c; i++)
+                        if (a[i] != 0)
+                            return 1;
+                }
+                else {
+                    for (let i = b - 1; i > c; i--)
+                        if (a[i] != 0)
+                            return 1;
+                }
+                return 2;
+            }
+            if (b % 8 == c % 8) {
+                if ((cr - br) < 0) {
+                    for (let i = b + 8; i < c; i += 8)
+                        if (a[i] != 0)
+                            return 1;
+                }
+                else {
+                    for (let i = b - 8; i > c; i -= 8)
+                        if (a[i] != 0)
+                            return 1;
+                }
+                return 2;
+            }
+            break;
+        case 5: case 11:
+            if (cr == br) {
+                if ((c - b) > 0) {
+                    for (let i = b + 1; i < c; i++)
+                        if (a[i] != 0)
+                            return 1;
+                }
+                else {
+                    for (let i = b - 1; i > c; i--)
+                        if (a[i] != 0)
+                            return 1;
+                }
+                return 2;
+            }
+            if (b % 8 == c % 8) {
+                if ((cr - br) < 0) {
+                    for (let i = b + 8; i < c; i += 8)
+                        if (a[i] != 0)
+                            return 1;
+                }
+                else {
+                    for (let i = b - 8; i > c; i -= 8)
+                        if (a[i] != 0)
+                            return 1;
+                }
+                return 2;
+            }
+            if (Math.abs(cr - br) == Math.abs(c % 8 - b % 8)) {
+                let v = - (cr - br) / Math.abs(cr - br);
+                let h = (c % 8 - b % 8) / Math.abs(c % 8 - b % 8);
+                for (let i = b + v * 8 + h; i != c; i += v * 8 + h) {
+                    if (a[i] != 0)
+                        return 1;
+                }
+                return 2;
+            }
+            break;
+        case 6: case 12:
+            if (Math.abs(br - cr) < 2 && Math.abs(b % 8 - c % 8) < 2)
+                return 2;
+            if (e[b] == 0 && b % 8 == 4)
+                if (br == 1 || br == 8) {
+                    if (br == cr && c == b + 2 && a[b + 1] == 0 && a[b + 2] == 0 && e[b + 3] == 0) {
+                        let g = JSON.parse(JSON.stringify(a));
+                        let f = JSON.parse(JSON.stringify(e));
+                        g[b + 1] = g[b];
+                        g[b] = 0;
+                        if (chesscheck(g, d, f) == -1)
+                            return 2;
+                    }
+                    if (br == cr && c == b - 2 && a[b - 1] == 0 && a[b - 2] == 0 && a[b - 3] == 0 && e[b - 4] == 0) {
+                        let g = JSON.parse(JSON.stringify(a));
+                        let f = JSON.parse(JSON.stringify(e));
+                        g[b - 1] = g[b];
+                        g[b] = 0;
+                        if (chesscheck(g, d, f) == -1)
+                            return 2;
+                    }
+                }
+            break;
+        case 7:
+            if (br == 7 && b == c - 16 && a[c] == 0 && a[c - 8] == 0)
+                return 2;
+            if (b == c - 8 && a[c] == 0)
+                return 2;
+            if (b % 8 != 7 && b == c - 9)
+                if (a[c] != 0 || e[c + 8] == 1)
+                    return 2;
+            if (b % 8 != 0 && b == c - 7)
+                if (a[c] != 0 || e[c + 8] == 1)
+                    return 2;
+    }
+    return 1;
+}
+
+async function chessimg(a, b, e, f, g, h, j, k, m, n) {
+    let c = new Array(2).fill(-1);
+    c[0] = chesscheck(a, 0, e);
+    c[1] = chesscheck(a, 1, e);
+    const canvas = createCanvas(1152, 1152);
+    const ctx = canvas.getContext('2d');
+    for (let i = 0; i < 64; i++) {
+        if ((1 + i + ((i - (i % 8)) / 8) % 2) % 2) {
+            ctx.fillStyle = '#ffffff';
+            if (i == b[0] || i == b[1] || i == b[2] || i == b[3])
+                ctx.fillStyle = '#00ff60';
+        }
+        else {
+            ctx.fillStyle = '#0093ff';
+            if (i == b[0] || i == b[1] || i == b[2] || i == b[3])
+                ctx.fillStyle = '#1c8a46';
+        }
+        if (i == c[0] || i == c[1])
+            ctx.fillStyle = '#ff0000';
+        ctx.fillRect((i % 8) * 128, (i - (i % 8)) * 16, 128, 128);
+    }
+    ctx.font = '24pt segoe ui symbol';
+    let o = [b[0], b[1], b[2], b[3], c[0], c[1]];
+    for (let i = 0; i < 8; i++) {
+        if (i % 2)
+            ctx.fillStyle = '#ffffff';
+        else
+            ctx.fillStyle = '#0093ff';
+        for (let j = 0; j < o.length; j++) {
+            if (o[j] == 63 - i)
+                ctx.fillStyle = '#000000';
+        }
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${String.fromCharCode(72 - i)}`, 1008 - i * 128, 1008);
+    }
+    for (let i = 0; i < 8; i++) {
+        if (i % 2)
+            ctx.fillStyle = '#ffffff';
+        else
+            ctx.fillStyle = '#0093ff';
+        for (let j = 0; j < o.length; j++) {
+            if (o[j] == i * 8)
+                ctx.fillStyle = '#000000';
+        }
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${8 - i}`, 12, i * 128 + 16);
+    }
+    for (let i = 0; i < 64; i++) {
+        if (a[i] != 0) {
+            switch (a[i]) {
+                case 1: ctx.drawImage(c1, (i % 8) * 128, (i - (i % 8)) * 16, 128, 128); break;
+                case 2: ctx.drawImage(c2, (i % 8) * 128, (i - (i % 8)) * 16, 128, 128); break;
+                case 3: ctx.drawImage(c3, (i % 8) * 128, (i - (i % 8)) * 16, 128, 128); break;
+                case 4: ctx.drawImage(c4, (i % 8) * 128, (i - (i % 8)) * 16, 128, 128); break;
+                case 5: ctx.drawImage(c5, (i % 8) * 128, (i - (i % 8)) * 16, 128, 128); break;
+                case 6: ctx.drawImage(c6, (i % 8) * 128, (i - (i % 8)) * 16, 128, 128); break;
+                case 7: ctx.drawImage(c7, (i % 8) * 128, (i - (i % 8)) * 16, 128, 128); break;
+                case 8: ctx.drawImage(c8, (i % 8) * 128, (i - (i % 8)) * 16, 128, 128); break;
+                case 9: ctx.drawImage(c9, (i % 8) * 128, (i - (i % 8)) * 16, 128, 128); break;
+                case 10: ctx.drawImage(c10, (i % 8) * 128, (i - (i % 8)) * 16, 128, 128); break;
+                case 11: ctx.drawImage(c11, (i % 8) * 128, (i - (i % 8)) * 16, 128, 128); break;
+                case 12: ctx.drawImage(c12, (i % 8) * 128, (i - (i % 8)) * 16, 128, 128); break;
+            }
+        }
+    }
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 1024, 512, 128);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(512, 1024, 512, 128);
+    ctx.font = '48pt segoe ui symbol';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(f, 8, 1088);
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'right';
+    ctx.fillText(g, 1016, 1088);
+    ctx.fillStyle = '#1a57f0';
+    ctx.fillRect(1024, 0, 128, 1024);
+    ctx.drawImage(c18, 1024, 1024, 128, 128);
+    let l = 0;
+    for (let i = 0; i < 6; i++) {
+        if (j[i] > 0) {
+            for (let k = 0; k < j[i]; k++) {
+                switch (i) {
+                    case 0: ctx.drawImage(c1, 1024, l, 64, 64); break;
+                    case 1: ctx.drawImage(c2, 1088, l, 64, 64); break;
+                    case 2: ctx.drawImage(c3, 1088, l, 64, 64); break;
+                    case 3: ctx.drawImage(c4, 1088, l, 64, 64); break;
+                    case 4: ctx.drawImage(c5, 1088, l, 64, 64); break;
+                    case 5: ctx.drawImage(c6, 1088, l, 64, 64); break;
+                }
+                l += 32;
+            }
+            l += 24;
+            if (i == 0)
+                l = 0;
+        }
+    }
+    l = 1016;
+    for (let i = 0; i < 6; i++) {
+        if (j[i + 6] > 0) {
+            l -= j[i + 6] * 32 + 24;
+            let m = l;
+            for (let k = 0; k < j[i + 6]; k++) {
+                switch (i) {
+                    case 0: ctx.drawImage(c7, 1024, m, 64, 64); break;
+                    case 1: ctx.drawImage(c8, 1088, m, 64, 64); break;
+                    case 2: ctx.drawImage(c9, 1088, m, 64, 64); break;
+                    case 3: ctx.drawImage(c10, 1088, m, 64, 64); break;
+                    case 4: ctx.drawImage(c11, 1088, m, 64, 64); break;
+                    case 5: ctx.drawImage(c12, 1088, m, 64, 64); break;
+                }
+                m += 32;
+            }
+            if (i == 0)
+                l = 1016;
+        }
+    }
+    const canv = createCanvas(1152, 1152);
+    const ct = canv.getContext('2d');
+    ct.drawImage(canvas, 0, 0);
+    switch (h) {
+        case 0:
+            ctx.drawImage(c13, 448, 1024, 128, 128); break;
+        case 1:
+            ctx.drawImage(c14, 448, 1024, 128, 128); break;
+        case 2:
+            ctx.drawImage(c15, 448, 1024, 128, 128); break;
+        case 3:
+            ctx.drawImage(c16, 448, 1024, 128, 128); break;
+        case 4:
+            ctx.drawImage(c17, 448, 1024, 128, 128); break;
+    }
+    const buffer = canvas.toBuffer('image/png');
+    fs.writeFileSync(`./${k}.png`, buffer);
+    if (n == 0)
+        ct.drawImage(c17, 448, 1024, 128, 128);
+    else
+        switch (h) {
+            case 0:
+                ct.drawImage(c14, 448, 1024, 128, 128); break;
+            case 1:
+                ct.drawImage(c13, 448, 1024, 128, 128); break;
+            case 2:
+                ct.drawImage(c15, 448, 1024, 128, 128); break;
+            case 3:
+                ct.drawImage(c16, 448, 1024, 128, 128); break;
+            case 4:
+                ct.drawImage(c17, 448, 1024, 128, 128); break;
+        }
+    const buf = canv.toBuffer('image/png');
+    fs.writeFileSync(`./${m}/${k}.png`, buf);
+}
+
+async function chessgif(a, b) {
+    let msg = await b.reply({ content: 'Rendering gif...' });
+    const GIFEncoder = require('gifencoder');
+    let c = fs.readdirSync(`./${a}`);
+    let encoder = new GIFEncoder(1152, 1152);
+    encoder.createReadStream().pipe(fs.createWriteStream(`${a}.gif`));
+    encoder.start();
+    encoder.setRepeat(0);
+    encoder.setDelay(1500);
+    encoder.setQuality(10);
+    const canvas = createCanvas(1152, 1152);
+    const ctx = canvas.getContext('2d');
+    let f = 0;
+    for (let e of c) {
+        await sleep(f);
+        let d = await loadImage(`./${a}/${e}`);
+        await sleep(f);
+        ctx.drawImage(d, 0, 0, 1152, 1152);
+        await sleep(f);
+        encoder.addFrame(ctx);
+    }
+    encoder.addFrame(ctx);
+    encoder.addFrame(ctx);
+    encoder.addFrame(ctx);
+    encoder.addFrame(ctx);
+    encoder.finish();
+    await sleep(100);
+    await b.reply({ files: [`./${a}.gif`] });
+    msg.delete();
+    fs.unlinkSync(`./${a}.gif`);
+    fs.rmSync(`./${a}`, { recursive: true, force: true });
+    return;
+}
+
+async function checkttt(a) {
+    for (let i = 0; i < 3; i++) {
+        if (a[0 + i * 3] != 0 && a[0 + i * 3] === a[1 + i * 3] && a[1 + i * 3] === a[2 + i * 3])
+            return `${i + 1}`;
+    }
+    for (let i = 0; i < 3; i++) {
+        if (a[0 + i] != 0 && a[0 + i] === a[3 + i] && a[3 + i] === a[6 + i])
+            return `${i + 4}`;
+    }
+    if (a[0] != 0 && a[0] === a[4] && a[4] === a[8])
+        return `7`;
+    if (a[2] != 0 && a[2] === a[4] && a[4] === a[6])
+        return `8`;
+    for (let i = 0; i < 9; i++) {
+        if (a[i] == 0)
+            return `0`;
+    }
+    return `9`;
+}
+
+function setttt(b, a) {
+    if (b[a] == 0) {
+        return new ButtonBuilder().setCustomId('a' + a)
+            .setLabel('.').setStyle(ButtonStyle.Secondary);
+    }
+    if (b[a] == 1) {
+        return new ButtonBuilder().setCustomId('a' + a)
+            .setLabel('⭕').setStyle(ButtonStyle.Primary);
+    }
+    if (b[a] == 2) {
+        return new ButtonBuilder().setCustomId('a' + a)
+            .setLabel('❌').setStyle(ButtonStyle.Success);
+    }
+}
+
+async function checkcon(a) {
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 6; j++) {
+            if (a[i + j * 7] != 0 && a[i + j * 7] == a[1 + i + j * 7] && a[1 + i + j * 7] == a[2 + i + j * 7] && a[2 + i + j * 7] == a[3 + i + j * 7]) {
+                return [1, i + j * 7, 1 + i + j * 7, 2 + i + j * 7, 3 + i + j * 7];
+            }
+        }
+    }
+    for (let i = 0; i < 7; i++) {
+        for (let j = 0; j < 3; j++) {
+            if (a[i + j * 7] != 0 && a[i + j * 7] == a[7 + i + j * 7] && a[7 + i + j * 7] == a[14 + i + j * 7] && a[14 + i + j * 7] == a[21 + i + j * 7]) {
+                return [1, i + j * 7, 7 + i + j * 7, 14 + i + j * 7, 21 + i + j * 7];
+            }
+        }
+    }
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 3; j++) {
+            if (a[i + j * 7] != 0 && a[i + j * 7] == a[8 + i + j * 7] && a[8 + i + j * 7] == a[16 + i + j * 7] && a[16 + i + j * 7] == a[24 + i + j * 7]) {
+                return [1, i + j * 7, 8 + i + j * 7, 16 + i + j * 7, 24 + i + j * 7];
+            }
+        }
+    }
+    for (let i = 3; i < 7; i++) {
+        for (let j = 0; j < 3; j++) {
+            if (a[i + j * 7] != 0 && a[i + j * 7] == a[6 + i + j * 7] && a[6 + i + j * 7] == a[12 + i + j * 7] && a[12 + i + j * 7] == a[18 + i + j * 7]) {
+                return [1, i + j * 7, 6 + i + j * 7, 12 + i + j * 7, 18 + i + j * 7];
+            }
+        }
+    }
+    for (let i = 0; i < 42; i++) {
+        if (a[i] == 0)
+            return [0];
+    }
+    return [2];
+}
+
+function parsewiki(a, s) {
+    while (a.includes('<sup>')) {
+        let d = a.indexOf('<sup>');
+        let e = a.indexOf('</sup>');
+        let f = '';
+        for (let i = d + 5; i < e; i++) {
+            f += sup[a[i]] || a[i];
+        }
+        f = f.replace(/\n\n:/g, '').replace(/'''''/g, '').replace(/'''/g, '').replace(/''/g, '').replace(/====/g, '').replace(/===/g, '').replace(/==/g, '');
+        a = a.substring(0, d) + f + a.substring(e + 6);
+    }
+    while (a.includes('<sub>')) {
+        let d = a.indexOf('<sub>');
+        let e = a.indexOf('</sub>');
+        let f = '';
+        for (let i = d + 5; i < e; i++) {
+            f += sub[a[i]] || a[i];
+        }
+        f = f.replace(/\n\n:/g, '').replace(/'''''/g, '').replace(/'''/g, '').replace(/''/g, '').replace(/====/g, '').replace(/===/g, '').replace(/==/g, '');
+        a = a.substring(0, d) + f + a.substring(e + 6);
+    }
+    while (a.includes('<math>')) {
+        let d = a.indexOf('<math>');
+        let e = a.indexOf('</math>');
+        a = a.substring(0, d) + '~~maths~~' + a.substring(e + 7);
+    }
+    while (a.includes('<')) {
+        let d = a.indexOf('<');
+        let e = a.indexOf('</');
+        let f = a.indexOf('>', e);
+        a = a.substring(0, d) + a.substring(f + 1);
+    }
+    while (a.includes('{{')) {
+        let d = a.indexOf('{{');
+        let e = a.indexOf('}}');
+        while (a.indexOf('{{', d + 1) < e && a.indexOf('{{', d + 1) != -1) {
+            d = a.indexOf('{{', d + 1);
+        }
+        a = a.substring(0, d) + a.substring(e + 2);
+    }
+    a = a.substring(0, 5000);
+    a += ']]';
+    while (a.includes('[[')) {
+        let d = a.indexOf('[[');
+        let e = a.indexOf(']]');
+        while (a.indexOf('[[', d + 1) < e && a.indexOf('[[', d + 1) != -1) {
+            d = a.indexOf('[[', d + 1);
+        }
+        if (a.substring(d + 2, e).includes('|') && a.substring(a.substring(d + 2, e).indexOf('|') + d + 3, e).includes('|')) {
+            a = a.substring(0, d) + a.substring(e + 2);
+        }
+        else {
+            if (a.substring(d + 2, e).startsWith('#')) {
+                //add link before #
+            }
+            if (a.substring(d + 2, e).includes('|')) {
+                let f = a.indexOf('|', d + 2);
+                a = a.substring(0, d) + '[' + a.substring(f + 1, e + 1) + `(https://${s}/wiki/${a.substring(d + 2, f).replace(/ /g, '_')})` + a.substring(e + 2);
+            }
+            else {
+                a = a.substring(0, d) + a.substring(d + 1, e + 1) + `(https://${s}/wiki/${a.substring(d + 2, e).replace(/ /g, '_')})` + a.substring(e + 2);
+            }
+        }
+    }
+    if (a.endsWith(']]')) {
+        a = a.substring(0, a.length - 2);
+    }
+    a = a.replace(/\n\n:/g, '').replace(/'''''/g, '***').replace(/'''/g, '**').replace(/''/g, '*').replace(/====/g, '_').replace(/===/g, '__').replace(/==/g, '___');
+    if (a.length > 4003) {
+        a = a.substring(0, 4000);
+        a += '...';
+    }
+    return a;
+}
+
+async function xkcd() {
+    let r;
+    try {
+        try {
+            r = await axios.get('https://xkcd.com/atom.xml');
+        } catch (e) {
+            throw Error(e);
+        };
+    } catch (e) {
+        //when elon says more code = more good
+    };
+    if (r != undefined && r.status == 200) {
+        const parser = new XMLParser();
+        let res = parser.parse(r.data);
+        res.feed.entry[0].sum = res.feed.entry[0].summary.replace('<img src="', '<img>').replace('" title="', '</img><title>').replace('" alt="', '</title><alt>').replace('" />', '</alt>');
+        if (data.xkcd == undefined)
+            data.xkcd = '';
+        if (data.xkcd != res.feed.updated) {
+            const id = res.feed.entry[0].id.replace('https://xkcd.com/', '').replace('/', '');
+            const embed = new EmbedBuilder()
+                .setColor('#1a57f0')
+                .setTitle(res.feed.entry[0].title.toString().replaceAll("&quot;", '"'))
+                .setURL(res.feed.entry[0].id)
+                .setDescription(res.feed.entry[0].summary.substring(res.feed.entry[0].summary.indexOf(" title=") + 8, res.feed.entry[0].summary.indexOf(" alt=") - 1).replaceAll("&quot;", '"'))
+                .setImage(res.feed.entry[0].summary.substring(res.feed.entry[0].summary.indexOf("img src=") + 9, res.feed.entry[0].summary.indexOf(" title=") - 1).replaceAll("&quot;", '"'))
+                .setFooter({ text: `#${id}` })
+                .setTimestamp();
+            xchan.send({ embeds: [embed] });
+            data.xkcd = res.feed.updated;
+        }
+    }
+}
+
+async function epic() {
+    let r;
+    try {
+        r = await axios.get('https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions');
+    } catch (e) { return; };
+    if (r != undefined && r.status == 200) {
+        if (JSON.stringify(r.data) != JSON.stringify(egfg)) {
+            egfg = r.data;
+            let date = new Date();
+            let c = 0;
+            let d = 0;
+            let emb = [];
+            let emc = [];
+            r.data.data.Catalog.searchStore.elements.forEach(i => {
+                let s;
+                let e;
+                let f = 0;
+                try {
+                    s = new Date(i.promotions.promotionalOffers[0].promotionalOffers[0].startDate);
+                    e = new Date(i.promotions.promotionalOffers[0].promotionalOffers[0].endDate);
+                } catch (e) { f = 1; };
+                if (f == 0 && s < date && e > date && i.price?.totalPrice?.discountPrice == 0) {//}) && i.price.totalPrice.discount > 0) { epig games api trippin wtf
+                    let t = i.title;
+                    let u = i.catalogNs?.mappings == undefined || i.catalogNs?.mappings[0]?.pageSlug == undefined ? i.productSlug : i.catalogNs.mappings[0].pageSlug;
+                    let o = i.price?.totalPrice?.originalPrice;
+                    let n = i.price?.totalPrice?.discountPrice;
+                    let k = i.keyImages[1]?.url;
+                    let l = i.description;
+                    let m = [t, s, e, u, o, n, k, l];
+                    games.epic.now.forEach(i => {
+                        if (JSON.stringify(i) == JSON.stringify(m))
+                            f = 1;
+                    });
+                    if (f == 0) {
+                        games.epic.now[games.epic.now.length] = m;
+                        emb[c] = new EmbedBuilder()
+                            .setColor('#1a57f0')
+                            .setThumbnail('https://static-assets-prod.epicgames.com/epic-store/static/favicon.ico')
+                            .setTitle(t)
+                            .setURL('https://store.epicgames.com/p/' + u)
+                            .setDescription(`~~${(o / 100).toFixed(2)}$~~ ${(n / 100).toFixed(2)}$ until ${e ? new Intl.DateTimeFormat('en-DE', { dateStyle: 'full', timeStyle: 'short' }).format(e) : 'it\'s not free anymore'}`)
+                            .setImage(k)
+                            .setFooter({ text: `${l}` });
+                        c++;
+                    }
+                }
+                f = 0;
+                try {
+                    s = new Date(i.promotions.upcomingPromotionalOffers[0].promotionalOffers[0].startDate);
+                    e = new Date(i.promotions.upcomingPromotionalOffers[0].promotionalOffers[0].endDate);
+                } catch (e) { f = 1; };
+                if (f == 0 && s > date && e > date) {
+                    let n = i.title;
+                    let o = [n, s, e];
+                    games.epic.up.forEach(i => {
+                        if (JSON.stringify(i) == JSON.stringify(o))
+                            f = 1;
+                    });
+                    if (f == 0) {
+                        games.epic.up[games.epic.up.length] = o;
+                        emc[d] = i.title;
+                        emc[d + 1] = s;
+                        d += 2;
+                    }
+                }
+            });
+            if (d > 0) {
+                emb[c] = new EmbedBuilder()
+                    .setColor('#1a57f0')
+                    .setTitle('Upcoming:');
+                for (let i = 0; i < d; i += 2) {
+                    let ema = new Date(emc[i + 1]);
+                    emb[c].addFields({ name: emc[i], value: `${ema ? new Intl.DateTimeFormat('en-DE', { dateStyle: 'full', timeStyle: 'short' }).format(ema) : 'at some point'}` });
+                }
+            }
+            const k = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ep').setLabel('PING').setStyle(ButtonStyle.Success).setDisabled(false));
+            if (c > 0) {
+                let q = '';
+                let g = Object.values(data.epicusr);
+                for (let i = 0; i < g.length; i++)
+                    q += `<@${g[i]}> `;
+                if (emb.length > 0)
+                    if (q == '')
+                        echan.send({ embeds: emb, components: [k] });
+                    else
+                        echan.send({ content: q, embeds: emb, components: [k] });
+                let h = Object.values(data.epicuser);
+                h.forEach(async function (i) {
+                    await client.users.fetch(i);
+                    let us = client.users.cache.get(i);
+                    us.send({ embeds: emb }).catch(console.error);
+                });
+            }
+        }
+    }
+}
+
+async function steam() {
+    let r;
+    try {
+        r = await axios.get('https://store.steampowered.com/search/?maxprice=free&specials=1');
+        //debug r = await axios.get('https://store.steampowered.com/search/?term=factorio&tags=599%2C597%2C21%2C492%2C9%2C19');
+    } catch (e) { return; };
+    if (r != undefined && r.status == 200) {
+        let stea = r.data;
+        let c = 0;
+        let emb = [];
+        let a = stea.indexOf('https://store.steampowered.com', 1);
+        while (a >= 0) {
+            let l = stea.substring(a, stea.indexOf('?', a) < stea.indexOf('"', a) ? stea.indexOf('?', a) : stea.indexOf('"', a));
+            let d = l.match(/\d+/g);
+            let i;
+            switch (l.substring(31, l.indexOf('/', 31))) {
+                case 'bundle':
+                    i = `https://cdn.akamai.steamstatic.com/steam/subs/${d}/header_586x192.jpg`;
+                    break;
+                case 'app':
+                    i = `https://cdn.akamai.steamstatic.com/steam/apps/${d}/header.jpg`;
+                case 'sub':
+                case 'bundle':
+                    let b = stea.indexOf('title', a);
+                    let t = stea.substring(b + 7, stea.indexOf('<', b + 8));
+                    t = t.replace('&amp;', '&');
+                    b = stea.indexOf('€', a);
+                    let p = parseInt(stea.substring(b - 5, b + 1).replace(',', '').match(/\d+/g)) / 100; //steam does not always list on results :/ may be fixed by going to the respective site
+                    let f = [0, 0];
+                    games.steam.forEach(j => {
+                        if (j[0] == l) {
+                            if (new Date().getTime() - j[1] > 172800000) {
+                                f[0] = 1;
+                            }
+                            f[1] = 1;
+                            j[1] = new Date().getTime();
+                        }
+                    });
+                    if (f[1] == 0) {
+                        games.steam[games.steam.length] = [l, new Date().getTime()];
+                    }
+                    if (f[1] == 0 || f[0] == 1) {
+                        emb[c] = new EmbedBuilder()
+                            .setColor('#1a57f0')
+                            .setTitle(t)
+                            .setURL(l)
+                            .setDescription(`~~${p}€~~ 0,00€`)
+                            .setImage(i);
+                        c++;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            a = stea.indexOf('https://store.steampowered.com', a + 1);
+        }
+        const k = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ep').setLabel('PING').setStyle(ButtonStyle.Success).setDisabled(false));
+        if (c > 0) {
+            let q = '';
+            let g = Object.values(data.epicusr);
+            for (let i = 0; i < g.length; i++)
+                q += `<@${g[i]}> `;
+            if (emb.length > 0)
+                if (q == '')
+                    echan.send({ embeds: emb, components: [k] });
+                else
+                    echan.send({ content: q, embeds: emb, components: [k] });
+            let h = Object.values(data.epicuser);
+            h.forEach(async function (i) {
+                await client.users.fetch(i);
+                let us = client.users.cache.get(i);
+                us.send({ embeds: emb }).catch(console.error);
+            });
+        }
+    }
+}
+
+setTimeout(async function () {
+    steam();
+    setInterval(async function () {
+        steam();
+    }, 60000);
+}, 20000);
+
+setTimeout(async function () {
+    epic();
+    setInterval(async function () {
+        epic();
+    }, 60000);
+}, 40000);
+
+setTimeout(async function () {
+    xkcd();
+    setInterval(async function () {
+        xkcd();
+    }, 60000);
+}, 60000);
+
+setInterval(async function () {
+    let t = new Date().getTime();
+    for (let j in data) {
+        if (j == 'ttt' || j == 'con' || j == 'chess')
+            for (let i in data[j]) {
+                let a = 0;
+                let m = await client.channels.fetch(data[j][i].channel);
+                m = await m.messages.fetch(i);
+                if (j == 'chess')
+                    a = (data[j][i].turn + data[j][i].color) % 2;
+                else
+                    a = data[j][i].turn;
+                if (data[j][i].time + 600000 < t && data[j][i].time + 660000 > t) {
+                    m.reply(`${a ? data[j][i].usr : data[j][i].init}: Please continue the game!`);
+                }
+                if (data[j][i].time + 18000000 < t && data[j][i].time + 1860000 > t) {
+                    m.reply(`${a ? data[j][i].usr : data[j][i].init}: You should continue the game!`);
+                }
+                if (data[j][i].time + 3600000 < t && data[j][i].time + 3660000 > t) {
+                    m.reply(`${a ? data[j][i].usr : data[j][i].init}: Will you continue the game?`);
+                }
+                if (data[j][i].time + 7200000 < t) {
+                    m.reply(`${a ? data[j][i].usr : data[j][i].init}: Guess what? You didn't continue the game!`);
+                    switch (j) {
+                        case 'ttt':
+                            const r1 = new ActionRowBuilder().addComponents(setttt(data.ttt[m.id].data, '0').setDisabled(true), setttt(data.ttt[m.id].data, '1').setDisabled(true), setttt(data.ttt[m.id].data, '2').setDisabled(true));
+                            const r2 = new ActionRowBuilder().addComponents(setttt(data.ttt[m.id].data, '3').setDisabled(true), setttt(data.ttt[m.id].data, '4').setDisabled(true), setttt(data.ttt[m.id].data, '5').setDisabled(true));
+                            const r3 = new ActionRowBuilder().addComponents(setttt(data.ttt[m.id].data, '6').setDisabled(true), setttt(data.ttt[m.id].data, '7').setDisabled(true), setttt(data.ttt[m.id].data, '8').setDisabled(true));
+                            if (data.ttt[i].turn)
+                                m.edit({ content: `The winner is ${data.ttt[m.id].init},\n${data.ttt[m.id].usr} timed out.`, components: [r1, r2, r3] });
+                            if (!data.ttt[i].turn)
+                                m.edit({ content: `The winner is ${data.ttt[m.id].usr},\n${data.ttt[m.id].init} timed out.`, components: [r1, r2, r3] });
+                            delete data.ttt[m.id];
+                            break;
+                        case 'con':
+                            let s = '';
+                            if (data.con[i].turn)
+                                s += `The winner is ${data.con[m.id].init},\n${data.con[m.id].usr} timed out.`;
+                            else if (!data.con[i].turn)
+                                s += `The winner is ${data.con[m.id].usr},\n${data.con[m.id].init} timed out.`;
+                            s += '\n```\n| 1  2  3  4  5  6  7|';
+                            for (let j = 0; j < 42; j++) {
+                                if (j % 7 == 0)
+                                    s += '\n|';
+                                switch (data.con[m.id].data[j]) {
+                                    case 0:
+                                        s += '  |';
+                                        break;
+                                    case 1:
+                                        s += ' o|';
+                                        break;
+                                    case 2:
+                                        s += ' x|';
+                                        break;
+                                }
+                            }
+                            s += '\n```';
+                            m.edit({ content: s, components: [] });
+                            delete data.con[m.id];
+                            break;
+                        case 'chess':
+                            if (!a) {
+                                if (data.chess[i].color)
+                                    await chessimg(data.chess[i].data, [-1, -1, -1, -1], data.chess[i].extra, data.chess[i].usr.username, data.chess[i].init.username, 2, data.chess[i].taken, j, i, 1);
+                                else
+                                    await chessimg(data.chess[i].data, [-1, -1, -1, -1], data.chess[i].extra, data.chess[i].init.username, data.chess[i].usr.username, 3, data.chess[i].taken, j, i, 1);
+                                let m = await client.channels.cache.get(data[j][i].channel).send({ content: `The winner is ${data.chess[i].usr},\n${data.chess[i].init} timed out.`, files: [`./${j}.png`] });
+                                fs.unlinkSync(`./${j}.png`);
+                                chessgif(i, m);
+                            }
+                            else if (a) {
+                                if (data.chess[i].color)
+                                    await chessimg(data.chess[i].data, [-1, -1, -1, -1], data.chess[i].extra, data.chess[i].usr.username, data.chess[i].init.username, 3, data.chess[i].taken, j, i, 1);
+                                else
+                                    await chessimg(data.chess[i].data, [-1, -1, -1, -1], data.chess[i].extra, data.chess[i].init.username, data.chess[i].usr.username, 2, data.chess[i].taken, j, i, 1);
+                                let m = await client.channels.cache.get(data[j][i].channel).send({ content: `The winner is ${data.chess[i].init},\n${data.chess[i].usr} timed out.`, files: [`./${j}.png`] });
+                                fs.unlinkSync(`./${j}.png`);
+                                chessgif(i, m);
+                            }
+                            try {
+                                delete data.message[data.chessusr[data.chess[i].init.id]];
+                            } catch (e) { console.log(e); }
+                            let temp = JSON.parse(JSON.stringify(i));
+                            try {
+                                delete data.chessusr[data.chess[temp].usr.id];
+                            } catch (e) { console.log(e); }
+                            try {
+                                delete data.chessusr[data.chess[temp].init.id];
+                            } catch (e) { console.log(e); }
+                            try {
+                                delete data.chess[temp];
+                            } catch (e) { console.log(e); }
+                            break;
+                    }
+                }
+            }
+    }
+}, 60000);
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function random(a) {
+    if (rnd.length == 0) {
+        let b = aes.aes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0, 0, 0, 0, data.ctr ^ 0xff000000, data.ctr ^ 0xff0000, data.ctr ^ 0xff00, data.ctr ^ 0xff]);
+        data.ctr++;
+        while (b.length > 0) {
+            rnd.push(b.pop() * 0x01000000 + b.pop() * 0x00010000 + b.pop() * 0x00000100 + b.pop() * 0x00000001);
+        }
+    }
+    return Math.floor((rnd.pop() / 0x100000000) * a);
+}
+
+async function playmsg(channel, guildid, a, h) {
+    if (channel == undefined && guildid == undefined) return;
+    if (channel != undefined && guildid != undefined && channel.guild.id != guildid) return; //prob renundant but idc
+    let g;
+    if (guildid == undefined)
+        g = channel.guild.id;
+    else
+        g = guildid;
+    if (h != undefined) {
+        data.play[g].text = h;
+        data.play[g].time = new Date().getTime();
+    }
+    if (bootleg[g] == undefined)
+        bootleg[g] = 0;
+    if (legboot[g] == undefined)
+        legboot[g] = 0;
+    if (legtime[g] == undefined)
+        legtime[g] = 0;
+    let k = parseInt(bootleg[g]);
+    if (a && new Date().getTime() < legtime[g] + 5000)
+        return;
+    bootleg[g]++;
+    while (legboot[g] != k)
+        await sleep(500);
+    if (channel == undefined)
+        channel = client.channels.cache.get(data.player[g].channelId);
+    let e;
+    let t;
+    let q;
+    let d = '';
+    let f = 0;
+    try {
+        if (q == undefined || q.nowPlaying() == undefined)
+            f = 1;
+    } catch (e) { f = 1; };
+    if (f) {
+        e = new EmbedBuilder()
+            .setTitle(`⏹ Use ${conf.prefix}play/${conf.prefix}p (track name/link) to start playing a song.`)
+            .setColor('#1a57f0');
+        if (data.play[g].time >= new Date().getTime() - 30000) {
+            d = `\`\`\`${data.play[g].text}\`\`\`\n`;
+            e.setDescription(d);
+            setTimeout(function () {
+                playmsg(channel, g, 0);
+            }, 30000);
+        }
+    }
+    else {
+        q = player.getQueue(channel.guild);
+        t = q.toJSON();
+        let h = q.nowPlaying().toJSON();
+        let f = '';
+        d = '|' + q.createProgressBar({ timecodes: false, length: 15 }) + '| ' + h.duration + '\n';
+        if (data.play[g].time >= new Date().getTime() - 30000)
+            d += `\`\`\`${data.play[g].text}\`\`\``;
+        d += '\n';
+        if (t.tracks.length > 0) {
+            d += `**Queue:**`;
+            let c = 0;
+            let i = 0;
+            let j = 3;
+            if (data.play[g].queue)
+                j = 15;
+            if (t.tracks.length == 4)
+                j = 4;
+            t.tracks.forEach(function (e) {
+                if (i < j)
+                    f += `${i + 1}: [${e.author} - ${e.title}](${e.url}) (${e.duration})\n`;
+                i++;
+                c += e.durationMS;
+            });
+            if (t.tracks.length > j) {
+                f += `> ${t.tracks.length - j} more Tracks...\n`;
+            }
+            c = c / 1000;
+            let l = c % 60;
+            if (l < 10)
+                l = `0${l}`;
+            c = (c - l) / 60;
+            d += ` (${c}:${l})\n`;
+            d += f;
+        }
+        else
+            d += `**Queue is empty.**\n`;
+        let p = '';
+        if (!data.play[g].paused)
+            p = '▶ ';
+        else
+            p = '⏸ ';
+        p += `${h.author} - ${h.title}\n`;
+        e = new EmbedBuilder()
+            .setColor('#1a57f0')
+            .setTitle(p)
+            .setURL(h.url)
+            .setDescription(d)
+            .setThumbnail(h.thumbnail);
+    }
+    let ba = [];
+    let bb = [];
+    let bc = [];
+    let b = [];
+    if (!data.play[g].adv) {
+        ba[0] = new ButtonBuilder().setCustomId('pa').setLabel('⏮').setStyle(ButtonStyle.Primary).setDisabled(!q?.connection);
+        ba[1] = new ButtonBuilder().setCustomId('pb').setLabel(data.play[g].paused ? '▶' : '⏸').setStyle(data.play[g].paused ? ButtonStyle.Danger : ButtonStyle.Success).setDisabled(!q?.connection);
+        ba[2] = new ButtonBuilder().setCustomId('pc').setLabel('⏭').setStyle(ButtonStyle.Primary).setDisabled(!q?.connection);
+        ba[3] = new ButtonBuilder().setCustomId('pd').setLabel('☰').setStyle(data.play[g].queue ? ButtonStyle.Success : ButtonStyle.Secondary).setDisabled(!q?.connection);
+        ba[4] = new ButtonBuilder().setCustomId('pe').setLabel('⏹').setStyle(ButtonStyle.Danger).setDisabled(!q?.connection);
+        bb[0] = new ButtonBuilder().setCustomId('pf').setLabel('ℹ').setStyle(ButtonStyle.Secondary).setDisabled(false);
+        bb[1] = new ButtonBuilder().setCustomId('pg').setLabel('🔽').setStyle(ButtonStyle.Secondary).setDisabled(false);
+        ba = new ActionRowBuilder().addComponents(ba);
+        bb = new ActionRowBuilder().addComponents(bb);
+        b = [ba, bb];
+    }
+    else {
+        ba[0] = new ButtonBuilder().setCustomId('pa').setLabel('⏮').setStyle(ButtonStyle.Primary).setDisabled(!q?.connection);
+        ba[1] = new ButtonBuilder().setCustomId('ph').setLabel('⏪').setStyle(ButtonStyle.Secondary).setDisabled(!q?.connection);
+        ba[2] = new ButtonBuilder().setCustomId('pb').setLabel(data.play[g].paused ? '▶' : '⏸').setStyle(data.play[g].paused ? ButtonStyle.Danger : ButtonStyle.Success).setDisabled(!q?.connection);
+        ba[3] = new ButtonBuilder().setCustomId('pi').setLabel('⏩').setStyle(ButtonStyle.Secondary).setDisabled(!q?.connection);
+        ba[4] = new ButtonBuilder().setCustomId('pc').setLabel('⏭').setStyle(ButtonStyle.Primary).setDisabled(!q?.connection);
+        bb[0] = new ButtonBuilder().setCustomId('pf').setLabel('ℹ').setStyle(ButtonStyle.Secondary).setDisabled(false);
+        bb[1] = new ButtonBuilder().setCustomId('pj').setLabel('🔉').setStyle(ButtonStyle.Primary).setDisabled(!q?.connection || data.play[g].volume <= 0);
+        bb[2] = new ButtonBuilder().setCustomId('pd').setLabel('☰').setStyle(data.play[g].queue ? ButtonStyle.Success : ButtonStyle.Secondary).setDisabled(!q?.connection);
+        bb[3] = new ButtonBuilder().setCustomId('pk').setLabel('🔊').setStyle(ButtonStyle.Primary).setDisabled(!q?.connection || data.play[g].volume >= data.play[g].volmax);
+        bb[4] = new ButtonBuilder().setCustomId('pe').setLabel('⏹').setStyle(ButtonStyle.Danger).setDisabled(!q?.connection);
+        bc[0] = new ButtonBuilder().setCustomId('pm').setLabel('🔀').setStyle(ButtonStyle.Primary).setDisabled(!t?.tracks.length);
+        switch (q?.repeatMode) {
+            default:
+            case 0:
+                bc[1] = new ButtonBuilder().setCustomId('pn').setLabel('➡️').setStyle(ButtonStyle.Primary).setDisabled(!q?.connection);
+                break;
+            case 1:
+                bc[1] = new ButtonBuilder().setCustomId('pn').setLabel('🔂').setStyle(ButtonStyle.Primary).setDisabled(!q?.connection);
+                break;
+            case 2:
+                bc[1] = new ButtonBuilder().setCustomId('pn').setLabel('🔁').setStyle(ButtonStyle.Primary).setDisabled(!q?.connection);
+                break;
+            case 3:
+                bc[1] = new ButtonBuilder().setCustomId('pn').setLabel('🔃').setStyle(ButtonStyle.Primary).setDisabled(!q?.connection);
+                break;
+        }
+        bc[2] = new ButtonBuilder().setCustomId('pl').setLabel('L').setStyle(ButtonStyle.Secondary).setDisabled(false);
+        bc[3] = new ButtonBuilder().setCustomId('po').setLabel('𝄜').setStyle(data.play[g].board ? ButtonStyle.Success : ButtonStyle.Secondary).setDisabled(false);
+        bc[4] = new ButtonBuilder().setCustomId('pg').setLabel('🔼').setStyle(ButtonStyle.Success).setDisabled(false);
+        ba = new ActionRowBuilder().addComponents(ba);
+        bb = new ActionRowBuilder().addComponents(bb);
+        bc = new ActionRowBuilder().addComponents(bc);
+        b = [ba, bb, bc];
+    }
+    if (data.play[g].board) {
+        b.push(new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId('pp').setLabel('DE').setStyle(ButtonStyle.Danger).setDisabled(false),
+            new ButtonBuilder().setCustomId('pq').setLabel('DR').setStyle(ButtonStyle.Danger).setDisabled(false),
+            new ButtonBuilder().setCustomId('pr').setLabel('SU').setStyle(ButtonStyle.Danger).setDisabled(false),
+            new ButtonBuilder().setCustomId('ps').setLabel('DB').setStyle(ButtonStyle.Danger).setDisabled(false),
+            new ButtonBuilder().setCustomId('pt').setLabel('ⓈⓊ').setStyle(ButtonStyle.Danger).setDisabled(false)
+        ));
+        b.push(new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId('pu').setLabel('ℹ (F)').setStyle(ButtonStyle.Secondary).setDisabled(false),
+            new ButtonBuilder().setCustomId('pv').setLabel('Earrape').setStyle(ButtonStyle.Primary).setDisabled(!q?.connection),
+            new ButtonBuilder().setCustomId('pw').setLabel('8D').setStyle(ButtonStyle.Primary).setDisabled(!q?.connection),
+            new ButtonBuilder().setCustomId('py').setLabel('↻').setStyle(ButtonStyle.Danger).setDisabled(!q?.connection)
+        ));
+    }
+    try {
+        if (data.player[g]?.channelId == undefined) {
+            const m = await channel.send({ embeds: [e], components: b });
+            data.player[g] = m;
+        }
+        else {
+            if (data.player[g].channelId == channel.id) {
+                let l = await channel.messages.fetch({ limit: 1 });
+                if (l.first().id == data.player[g].id)
+                    await data.player[g].edit({ embeds: [e], components: b });
+                else {
+                    try {
+                        await data.player[g].delete();
+                    } catch (e) { }
+                    const m = await channel.send({ embeds: [e], components: b });
+                    data.player[g] = m;
+                }
+            }
+            else {
+                try {
+                    await data.player[g].delete();
+                } catch (e) { }
+                const m = await channel.send({ embeds: [e], components: b });
+                data.player[g] = m;
+            }
+        }
+    } catch (e) { console.log(e); }
+    legboot[g]++;
+    legtime[g] = new Date().getTime();
+}
+
+async function playaction(a, b, d, m) {
+    //if (m.id == conf.lmao)
+    //    return d.send(`Due to yes you have lost your Music Privileges,\n${m}`).then(async (m) => { await sleep(30000); m.delete(); });
+    let g = d.guild.id;
+    let c = 0;
+    let q, u, i, s, v;
+    if (!d) return;
+    try {
+        q = player.getQueue(d.guild);
+    } catch (e) { }
+    let t;
+    try {
+        t = q.toJSON();
+    } catch (e) { }
+    let e = 0;
+    switch (a) {
+        case 'skip':
+        case 'shuffle':
+        case 'take':
+            if (t == undefined || t?.tracks.length == 0)
+                return d.send(`There are no tracks in queue to ${a},\n${m}`);
+        case 'prev':
+        case 'pause':
+        case 'queue':
+        case 'leave':
+        case 'volup':
+        case 'voldw':
+        case 'repeat':
+        case 'more':
+        case 'less':
+        case 'filter':
+        case 'lyrics':
+        case 'rem':
+        case 'list':
+            if (q?.connection == undefined)
+                return d.send(`I am not in a voice channel,\n${m}`);
+            break;
+        case 'search':
+        case 'play':
+        case 'info':
+        case 'info2':
+        case 'expand':
+        case 'board':
+        case 'int':
+            e = 1;
+            break;
+        default:
+            return d.send(`Wat???\n${m}`);
+    }
+    if (!e) {
+        if (m?.voice == undefined) {
+            return d.send(`You are not in a voice channel,\n${m}`);
+        }
+        if (player.voiceUtils.getConnection(g)?.channel?.id && player.voiceUtils.getConnection(g)?.channel?.id != m?.voice.channelId) {
+            return d.send(`You are not in my voice channel,\n${m}`);
+        }
+    }
+    switch (a) {
+        case 'search':
+            if (b == undefined || b == '')
+                return d.send(`I humbly request a term to search for,\n${m}`);
+            try {
+                s = await player.search(b, { requestedBy: m.user, searchEngine: QueryType.AUTO });
+            } catch (e) {
+                return d.send(`Error in Searching.`);
+            }
+            if (!s || !s.tracks.length)
+                return d.send(`No results found for '${b}'`);
+            let ee = '';
+            let bb = [];
+            let x = 10;
+            if (m.id == conf.lmao)
+                x = 5;
+            if (s.playlist != null) {
+
+            }
+            else {
+                for (i = 0; i < (s.tracks.length < x ? s.tracks.length : x); i++) {
+                    ee += `${i + 1}: [${s.tracks[i].author} - ${s.tracks[i].title}](${s.tracks[i].url}) (${s.tracks[i].duration})${s.tracks[i].views > 0 ? ` [${s.tracks[i].views}]` : ''}\n`;
+                    if (i % 5 == 0)
+                        bb[(i - (i % 5)) / 5] = [];
+                    bb[(i - (i % 5)) / 5][i % 5] = new ButtonBuilder().setCustomId(`pz ${s.tracks[i].url}`).setLabel(`${i + 1}`).setStyle(ButtonStyle.Secondary).setDisabled(false);
+                }
+            }
+            i = 0;
+            while (bb[i] != undefined) {
+                bb[i] = new ActionRowBuilder().addComponents(bb[i]);
+                i++;
+            }
+            let emb = new EmbedBuilder()
+                .setColor('#1a57f0')
+                .setTitle('Found:')
+                .setDescription(ee);
+            return d.send({ embeds: [emb], components: bb });
+        case 'play':
+            if (data.play[g] == undefined) {
+                let b = {};
+                b.text = "";
+                b.time = 0;
+                b.paused = 0;
+                b.queue = 0;
+                b.adv = 0;
+                b.board = 0;
+                b.filter = 0;
+                b.volume = 100;
+                b.volmax = 200;
+                data.play[g] = b;
+            }
+            //if (new Date().getHours() >= 23) {
+            //    return d.send(`I have gone to sleep, good night ${message.author}`);
+            //} TODO: fix
+            //if (m.id == conf.lmao)
+            //    return d.send(`Due to yes you have lost your Music Privileges,\n${m}`).then(async (m) => { await sleep(30000); m.delete(); });
+            if (b == undefined || b == '') {
+                u = `You did not specify a term, so here is the player`;
+                break;
+            }
+            if (!m.voice.channelId) return d.send(`You must be in a voice channel,\n${m}.`);
+            if (player.voiceUtils.getConnection(g)?.channel?.id && player.voiceUtils.getConnection(g)?.channel?.id != m?.voice.channelId) return d.send(`You are not in my voice channel,\n${m}.`);
+            try {
+                s = await player.search(b, { requestedBy: m.user, searchEngine: QueryType.AUTO });
+            } catch (e) {
+                console.log(e);
+                u = `Error in Searching.`;
+                break;
+            }
+            if (!s || !s.tracks.length) {
+                u = `No results found for '${b}'`;
+                break;
+            }
+            q = player.createQueue(d.guild, { ytdlOptions: { filter: 'audioonly', highWaterMark: 1 << 30, dlChunkSize: 0 }, metadata: d });
+            try {
+                if (!q.connection) {
+                    await q.connect(m.voice.channel);
+                    data.play[g].paused = 0;
+                    data.play[g].time = 0;
+                    q.setVolume(data.play[g].volume);
+                    let qq = q.getFiltersEnabled();
+                    for (let i = 0; i < qq.length; i++) {
+                        filters[qq[i]] = false;
+                    }
+                    q.setFilters(filters);
+                }
+            } catch (e) {
+                console.log(e);
+                player.deleteQueue(d.guild);
+                return d.send(`Could not join you,\n${m}.`);
+            }
+            s.playlist ? q.addTracks(s.tracks) : q.addTrack(s.tracks[0]);
+            try {
+                if (!q.playing) await q.play();
+            } catch (e) {
+                console.log(e);
+                u = `Error in Playback.`;
+                player.deleteQueue(message.guild);
+                break;
+            }
+            if (s.playlist)
+                u = `Added ${s.playlist.author.name}'s Playlist '${s.playlist.title}' to the queue.`;
+            else
+                u = `Added ${s.tracks[0].author} - ${s.tracks[0].title} to the queue.`;
+            data.play[g].time = new Date().getTime();
+            setStatus(1);
+            break;
+        case 'prev':
+            if (q.previousTracks.length > 1) {
+                q.insert(q.nowPlaying(), 0);
+                q.insert(q.previousTracks[0], 0);
+                q.skip();
+                for (i = 1; i < q.previousTracks.length; i++) {
+                    q.previousTracks[i - 1] = q.previousTracks[i];
+                }
+                delete q.previousTracks[q.previousTracks.length - 1];
+            }
+            else
+                q.seek(0);
+            u = `Went back to previous track`;
+            break;
+        case 'skip':
+            if (q.tracks.length == 0) {
+                q.stop();
+                player.deleteQueue(d.guild);
+                u = `Stopped playing`;
+            }
+            else {
+                if (b == undefined || b == '' || b == null)
+                    b = 1;
+                if (isStringObject(b))
+                    b = b.toLowerCase();
+                i = parseInt(b);
+                if (isNaN(i)) {
+                    for (i = 0; i < t.tracks.length; i++) {
+                        if (t.tracks[i].title.toLowerCase().includes(b)) {
+                            s = 1;
+                            break;
+                        }
+                    }
+                    if (s == 1) {
+                        k = t.tracks[i].title;
+                        q.skipTo(i);
+                        u = `Skipped to track '${k}'`;
+                    }
+                    else {
+                        u = `Could not find a track matching '${b}'`;
+                    }
+                }
+                else {
+                    i > 0 ? null : i = 1;
+                    if (t.tracks.length >= i) {
+                        k = t.tracks[i - 1].title;
+                        q.skipTo(i - 1);
+                        u = `Skipped to track '${k}'`;
+                    }
+                    else {
+                        u = `Cannot skip ${b} track${b > 1 ? 's' : ''}, as there are only ${t.tracks.length} track${t.tracks.length > 1 ? 's' : ''} left`;
+                    }
+                }
+            }
+            break;
+        case 'take':
+            if (b == undefined || b == '' || b == null)
+                b = 1;
+            if (isStringObject(b))
+                b = b.toLowerCase();
+            i = parseInt(b);
+            if (isNaN(i)) {
+                for (i = 0; i < t.tracks.length; i++) {
+                    if (t.tracks[i].title.toLowerCase().includes(b)) {
+                        s = 1;
+                        break;
+                    }
+                }
+                if (s == 1) {
+                    v = q.tracks[i];
+                    k = t.tracks[i].title;
+                    if (q.previousTracks.length > 1)
+                        q.back();
+                    else
+                        q.insert(q.nowPlaying(), 0);
+                    q.remove(i + 1);
+                    q.insert(v, 0);
+                    q.skip();
+                    u = `Prioritized track '${k}'`;
+                }
+                else {
+                    u = `Could not find a track matching '${b}'`;
+                }
+            }
+            else {
+                i >= 0 ? null : i = 1;
+                if (t.tracks.length >= i) {
+                    v = q.tracks[i - 1];
+                    k = t.tracks[i - 1].title;
+                    if (q.previousTracks.length > 1)
+                        q.back();
+                    else
+                        q.insert(q.nowPlaying(), 0);
+                    q.remove(i);
+                    q.insert(v, 0);
+                    q.skip();
+                    u = `Prioritized track '${k}'`;
+                }
+                else {
+                    u = `Cannot prioritize track ${b}, as there are only ${t.tracks.length} track${t.tracks.length > 1 ? 's' : ''} left`;
+                }
+            }
+            break;
+        case 'rem':
+            if (b == undefined || b == '' || b == null)
+                b = 1;
+            if (isStringObject(b))
+                b = b.toLowerCase();
+            i = parseInt(b);
+            if (isNaN(i)) {
+                for (i = 0; i < t.tracks.length; i++) {
+                    if (t.tracks[i].title.toLowerCase().includes(b)) {
+                        s = 1;
+                        break;
+                    }
+                }
+                if (s == 1) {
+                    k = t.tracks[i].title;
+                    q.remove(i);
+                    u = `Removed track '${k}'`;
+                }
+                else {
+                    u = `Could not find a track matching '${b}'`;
+                }
+            }
+            else {
+                i >= 0 ? null : i = 1;
+                if (t.tracks.length >= i) {
+                    k = t.tracks[i - 1].title;
+                    q.remove(i - 1);
+                    u = `Removed track '${k}'`;
+                }
+                else {
+                    u = `Cannot prioritize track ${b}, as there are only ${t.tracks.length} track${t.tracks.length > 1 ? 's' : ''} left`;
+                }
+            }
+            break;
+        case 'list':
+            if (isStringObject(b))
+                b = b.toLowerCase();
+            v = '';
+            k = 0;
+            for (i = 0; i < t.tracks.length; i++) {
+                if (t.tracks[i].title.toLowerCase().includes(b)) {
+                    v += `${i + 1}: [${t.tracks[i].author} - ${t.tracks[i].title}](${t.tracks[i].url}) (${t.tracks[i].duration})\n`;
+                    k++;
+                    if (k == 10)
+                        break;
+                }
+            }
+            if (v != '') {
+                let emb = new EmbedBuilder()
+                    .setColor('#1a57f0')
+                    .setTitle('Found in queue:')
+                    .setDescription(v);
+                return d.send({ embeds: [emb] });
+            }
+            return d.send('Found nothing');
+        case 'pause':
+            q.setPaused(!data.play[g].paused);
+            u = `${!data.play[g].paused ? 'Paused' : 'Resumed'} ${q.nowPlaying().title}`;
+            data.play[g].paused = !data.play[g].paused;
+            break;
+        case 'queue':
+            data.play[g].queue = (data.play[g].queue + 1) % 2;
+            break;
+        case 'leave':
+            q.stop();
+            player.deleteQueue(d.guild);
+            u = `Stopped playing`;
+            break;
+        case 'info':
+            let r = conf.prefix;
+            u =
+                `▶/⏸ pause/unpause\n⏮/⏭ skip/previous track\n⏪/⏩ skip/unskip 10 seconds
+☰ show/hide queue\n⏹ stop player\nℹ show this info
+🔽/🔼 expand/retract more player options\nL show lyrics\n𝄜 expand/retract soundboard\n🔊/🔉 volume up/down
+🔀 shuffle queue\n➡️ no repeat 🔂 repeat track 🔁 repeat queue\n🔃 autoplay after queue ends\n↺ reset audio filters
+Commands: ${r}play [x], ${r}search [x], ${r}skip [x], ${r}prev, ${r}force ${r}shuffle, ${r}list [x], ${r}remove [x], ${r}stop, ${r}de, ${r}ddr, ${r}su, ${r}db, ${r}sb`;
+            break;
+        case 'info2':
+            u =
+                `Toggle an Audio-Filter using the Filterboard in the Player or ${conf.prefix}filter [filter]
+Available Filters: 8D, bassboost, bassboost_high, bassboost_low, chorus, chorus2d, chorus3d, compressor, dim, earrape, expander, fadein, flanger, gate, haas, karaoke, mcompand, mono, mstlr, mstrr, nightcore, normalizer, normalizer2, phaser, pulsator, reverse, softlimiter, subboost, surrounding, treble, tremolo, vaporwave, vibrato`;
+            break;
+        case 'expand':
+            data.play[g].adv = (data.play[g].adv + 1) % 2;
+            data.play[g].board == 1 && data.play[g].adv == 0 ? data.play[g].board = 0 : null;
+            data.play[g].queue == 1 && data.play[g].adv == 0 ? data.play[g].queue = 0 : null;
+            break;
+        case 'lyrics':
+            //to lyrics stuff
+            break;
+        case 'volup':
+            if (data.play[g].volume < data.play[g].volmax)
+                data.play[g].volume = data.play[g].volume + 25;
+            q.setVolume(data.play[g].volume);
+            u = `Volume: ${data.play[g].volume * 100 / data.play[g].volmax}%`;
+            break;
+        case 'voldw':
+            if (data.play[g].volume > 0)
+                data.play[g].volume = data.play[g].volume - 25;
+            q.setVolume(data.play[g].volume);
+            u = `Volume: ${data.play[g].volume * 100 / data.play[g].volmax}%`;
+            break;
+        case 'shuffle':
+            q.shuffle();
+            u = `Shuffled the queue`;
+            break;
+        case 'repeat':
+            q.setRepeatMode((q.repeatMode + 1) % 4);
+            u = `Set Player to ${q.repeatMode == 0 ? 'not repeat' : q.repeatMode == 1 ? 'repeat current track' : q.repeatMode == 2 ? 'repeat current queue' : 'autoplay after queue'}`;
+            break;
+        case 'more':
+            t = q.getPlayerTimestamp().current;
+            t = t.split(':');
+            t = parseInt(t[0]) * 60 + parseInt(t[1]);
+            t *= 1000;
+            if (t + 10000 < q.nowPlaying().durationMS) {
+                q.seek(t + 10000);
+                u = `+10 seconds`;
+            }
+            break;
+        case 'less':
+            t = q.getPlayerTimestamp().current;
+            t = t.split(':');
+            t = parseInt(t[0]) * 60 + parseInt(t[1]);
+            t *= 1000;
+            if (t - 10000 < q.nowPlaying().durationMS) {
+                q.seek(t - 10000);
+                u = `-10 seconds`;
+            }
+            break;
+        case 'board':
+            data.play[g].board = (data.play[g].board + 1) % 2;
+            break;
+        case 'int':
+            c = 1;
+            intervene(b, d, m);
+            break;
+        case 'filter':
+            filter(b, d, m);
+            break;
+    }
+    if (!c)
+        playmsg(d, undefined, 0, u);
+}
+
+async function filter(a, c, m) {
+    let g = m.guild.id;
+    if (!m.voice.channelId)
+        return c.send(`You are not in my voice channel,\n${m}.`)
+    if (player.voiceUtils.getConnection(m.guild.id)?.channel?.id && player.voiceUtils.getConnection(m.guild.id)?.channel?.id != m?.voice.channelId)
+        return c.send(`You are not in my voice channel,\n${m}.`);
+    if (a == 'reset') {
+        const queue = player.createQueue(c.guild, { ytdlOptions: { filter: 'audioonly', highWaterMark: 1 << 30, dlChunkSize: 0 }, metadata: c });
+        let d = queue.getFiltersEnabled();
+        for (let i = 0; i < d.length; i++) {
+            filters[d[i]] = false;
+        }
+        queue.setFilters(filters);
+        data.play[g].text = `Reset all Audio-Filters.`;
+        data.play[g].time = new Date().getTime();
+        return;
+    }
+    let f = ['8D', 'bassboost', 'bassboost_high', 'bassboost_low', 'chorus', 'chorus2d', 'chorus3d', 'compressor', 'dim', 'earrape', 'expander', 'fadein', 'flanger', 'gate', 'haas', 'karaoke', 'mcompand', 'mono', 'mstlr', 'mstrr',
+        'nightcore', 'normalizer', 'normalizer2', 'phaser', 'pulsator', 'reverse', 'softlimiter', 'subboost', 'surrounding', 'treble', 'tremolo', 'vaporwave', 'vibrato'];
+    let b = 0;
+    for (let i = 0; i < f.length; i++) {
+        if (f[i] == a)
+            b = 1;
+    }
+    if (b == 0)
+        return c.send(`The filter you selected is invalid,\n${m}.`)
+    const queue = player.createQueue(c.guild, { ytdlOptions: { filter: 'audioonly', highWaterMark: 1 << 30, dlChunkSize: 0 }, metadata: c });
+    filters[a] = queue.getFiltersDisabled().includes(a);
+    queue.setFilters(filters);
+    data.play[g].text = filters[a] ? `Added ${a}-filter.` : `Removed ${a}-filter.`;
+    data.play[g].time = new Date().getTime();
+}
+
+async function intervene(a, c, m) {
+    let g = m.guild.id;
+    if (data.play[g] == undefined) {
+        let b = {};
+        b.text = "";
+        b.time = 0;
+        b.paused = 0;
+        b.queue = 0;
+        b.adv = 0;
+        b.board = 0;
+        b.filter = 0;
+        b.volume = 100;
+        b.volmax = 200;
+        data.play[g] = b;
+    }
+    let t;
+    let b = 0;
+    let track;
+    switch (a) {
+        case 'de':
+            t = 'https://youtu.be/_LNYMKgC7AE';
+            break;
+        case 'su': case 'se':
+            t = 'https://youtu.be/U06jlgpMtQs';
+            break;
+        case 'ddr':
+            t = 'https://youtu.be/DTV92wqYjfA';
+            break;
+        case 'db':
+            t = 'https://youtu.be/wXjhszy2f9w';
+            break;
+        case 'gb':
+            t = 'https://youtu.be/gzthb6gqLDY';
+            break;
+        default:
+            return;
+    }
+    if (!m.voice.channelId) {
+        b = 1
+    }
+    if (player.voiceUtils.getConnection(g)?.channel?.id && player.voiceUtils.getConnection(g)?.channel?.id != m.voice.channelId) {
+        b = 1;
+    }
+    if (b) {
+        if (a == 'gb')
+            return;
+        c.send(t);
+    } else {
+        let u;
+        switch (a) {
+            case 'de':
+                track = new Track(this, { 'author': 'Haydn, von Fallersleben', 'description': 'Einigkeit und Recht und Freiheit für das deutsche Vaterland!', 'duration': '1:15', 'requestedBy': null, 'source': 'youtube', 'thumbnail': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Flag_of_Germany.svg/800px-Flag_of_Germany.svg.png', 'title': 'Deutsche Nationalhymne', 'url': t, 'views': 80000000 })
+                break;
+            case 'su': case 'se':
+                track = new Track(this, { 'author': 'Михалков, Уреклян, Александров', 'description': 'Союз нерушимый республик свободных, Сплотила навеки Великая Русь.', 'duration': '3:44', 'requestedBy': null, 'source': 'youtube', 'thumbnail': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Flag_of_the_Soviet_Union.svg/800px-Flag_of_the_Soviet_Union.svg.png', 'title': 'Гимн Советского Союза', 'url': t, 'views': 8000000000 })
+                break;
+            case 'ddr':
+                track = new Track(this, { 'author': 'Eisler, Becher', 'description': 'Auferstanden aus Ruinen und der Zukunft zugewandt.', 'duration': '2:53', 'requestedBy': null, 'source': 'youtube', 'thumbnail': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Flag_of_East_Germany.svg/800px-Flag_of_East_Germany.svg.png', 'title': 'Auferstanden aus Ruinen', 'url': t, 'views': 17000000 })
+                break;
+            case 'db':
+                track = new Track(this, { 'author': 'Wise Guys', 'description': 'We <3 DB!', 'duration': '3:42', 'requestedBy': null, 'source': 'youtube', 'thumbnail': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Deutsche_Bahn_AG-Logo.svg/512px-Deutsche_Bahn_AG-Logo.svg.png', 'title': 'Deutsche Bahn', 'url': t, 'views': 80000000 })
+                break;
+            case 'gb':
+                track = new Track(this, { 'author': 'SecretBot', 'description': 'goodbye', 'duration': '0:00', 'requestedBy': null, 'source': 'youtube', 'thumbnail': '', 'title': 'Goodbye', 'url': t, 'views': 1 })
+            default:
+                return;
+        }
+        const queue = player.createQueue(c.guild, { ytdlOptions: { filter: 'audioonly', highWaterMark: 1 << 30, dlChunkSize: 0 }, metadata: c });
+        try {
+            if (!queue.connection) {
+                await queue.connect(m.voice.channel);
+                data.play[g].paused = 0;
+                data.play[g].time = 0;
+                queue.setVolume(data.play[g].volume);
+                let qq = queue.getFiltersEnabled();
+                for (let i = 0; i < qq.length; i++) {
+                    filters[qq[i]] = false;
+                }
+                queue.setFilters(filters);
+            } `w`
+        } catch (e) {
+            void player.deleteQueue(c.guild);
+            return c.send(`Could not join you,\n${m}.`);
+        }
+        if (a == 'se') {
+            filters['earrape'] = true;
+            queue.setFilters(filters);
+        }
+        if (queue.previousTracks.length > 1)
+            queue.back();
+        else if (queue.nowPlaying() != null)
+            queue.insert(queue.nowPlaying(), 0);
+        queue.insert(track, 0);
+        queue.skip();
+        try {
+            if (!queue.playing) await queue.play();
+        } catch (e) {
+            u = `Error in Playback.`;
+            return player.deleteQueue(c.guild);
+        }
+        u = `Playing ${track.author} - ${track.title} now.`;
+        playmsg(c, undefined, 0, u);
+        setStatus(1);
+    }
+}
+
+setInterval(async function () {
+    setStatus(0);
+}, 300000);
+
+function setStatus(b) {
+    if (b) {
+        if (data.status != -1) {
+            client.user.setActivity('the worst music', { type: ActivityType.Listening });
+            client.user.setStatus('online');
+            data.status = -1;
+        }
+    } else {
+        let n = new Date();
+        let a = new Date(n.getFullYear(), n.getMonth(), n.getDate(), 0, 0, 0, 0);
+        let d = new Date(n.getFullYear(), n.getMonth(), n.getDate(), 11, 0, 0, 0);
+        let e = new Date(n.getFullYear(), n.getMonth(), n.getDate(), 20, 0, 0, 0);
+        let m = new Date(n.getFullYear(), n.getMonth(), n.getDate(), 23, 0, 0, 0);
+        let z = new Date(n.getFullYear(), n.getMonth(), n.getDate(), 23, 59, 59, 999);
+        if (n.getTime() >= a.getTime() && n.getTime() <= d.getTime()) {
+            if (data.status != 1 || 1) { //always update stuff is cursed
+                client.user.setActivity('the moon', { type: ActivityType.Watching });
+                client.user.setStatus('idle');
+                data.status = 1;
+            }
+        }
+        if (n.getTime() > d.getTime() && n.getTime() <= e.getTime()) {
+            if (data.status != 2 || 1) {
+                client.user.setActivity('you succeed', { type: ActivityType.Watching });
+                client.user.setStatus('online');
+                data.status = 2;
+            }
+        }
+        if (n.getTime() > e.getTime() && n.getTime() <= m.getTime()) {
+            if (data.status != 3 || 1) {
+                client.user.setActivity('the stars', { type: ActivityType.Watching });
+                client.user.setStatus('idle');
+                data.status = 3;
+            }
+        }
+        if (n.getTime() > m.getTime() && n.getTime() <= z.getTime()) {
+            if (data.status != 4 || 1) {
+                client.user.setActivity('sweet dreams', { type: ActivityType.Listening });
+                client.user.setStatus('idle');
+                data.status = 4;
+            }
+        }
+    }
+}
+
+setInterval(async function () {
+    for (let e in data.player) {
+        if (data.player[e] && data.player[e].channelId) {
+            let channel = client.channels.cache.get(data.player[e].channelId);
+            let q;
+            channel.guild ? q = player.getQueue(channel.guild) : q = undefined;
+            if (q && q.playing) {
+                playmsg(channel, undefined, 1);
+                setStatus(1);
+            }
+            else
+                setStatus(0);
+        }
+    }
+}, 20000);
+
+setInterval(async function () {
+    save();
+}, 60000 * 30);
+
+async function save() {
+    data.save = new Date().toDateString();
+    fs.writeFileSync(cf, JSON.stringify(conf, null, 2), function writeJSON(err) {
+        if (err) return console.log(err);
+    });
+    fs.writeFileSync(df, JSON.stringify(data, null, 2), function writeJSON(err) {
+        if (err) return console.log(err);
+    });
+    fs.writeFileSync('./epic.json', JSON.stringify(egfg, null, 2), function writeJSON(err) {
+        if (err) return console.log(err);
+    });
+    fs.writeFileSync('./games.json', JSON.stringify(games, null, 2), function writeJSON(err) {
+        if (err) return console.log(err);
+    });
+}
+
+async function exit() {
+    save();
+    client.user.setStatus('invisible');
+    try {
+        for (let e in data.player) {
+            try {
+                let q = player.getQueue(e);
+                q.destroy();
+            } catch (e) { }
+        }
+        await sleep(500);
+        for (let e in data.player) {
+            try {
+                data.player[e].delete();
+            } catch (e) { }
+        }
+    } catch (e) { console.log(e) }
+    await sleep(1000);
+    process.exit();
+};
+
+process.stdin.resume();
+
+process.on('exit', () => {
+    console.log('exit');
+    exit();
+});
+process.on('SIGINT', () => {
+    console.log('SIGINT');
+    exit();
+});
+process.on('SIGTERM', () => {
+    console.log('SIGTERM');
+    exit();
+});
+process.on('SIGUSR1', () => {
+    console.log('SIGUSR1');
+    exit();
+});
+process.on('SIGUSR2', () => {
+    console.log('SIGUSR2');
+    exit();
+});
+process.on('cleanup', () => {
+    console.log('cleanup');
+    exit();
+});
+
+client.login(conf.token);
