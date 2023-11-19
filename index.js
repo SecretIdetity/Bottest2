@@ -129,7 +129,6 @@ client.once('ready', async () => {
     echan = client.channels.cache.get(conf.epic);
     xchan = client.channels.cache.get(conf.xkcd);
     wchan = client.channels.cache.get(conf.wel);
-    gchan = client.channels.cache.get("938392356917489704");
     c1 = await loadImage('./chess/1.png');
     c2 = await loadImage('./chess/2.png');
     c3 = await loadImage('./chess/3.png');
