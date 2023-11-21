@@ -1,6 +1,6 @@
 {
-  "name": "bottest",
-  "version": "1.0.0",
+  "name": "bottest2",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,24 +8,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "bottest"
+    "url": "bottest2"
   },
   "author": "SecretIdetity",
-  "license": "ISC",
   "dependencies": {
-    "@discord-player/extractor": "^4.2.1",
-    "@discordjs/voice": "^0.16.0",
     "axios": "^1.1.3",
     "canvas": "^2.10.0",
-    "discord-player": "^6.3.0",
     "discord.js": "^14.3.0",
     "fast-xml-parser": "^4.0.9",
-    "ffmpeg-static": "^5.1.0",
     "gifencoder": "^2.0.1",
     "libsodium-wrappers": "^0.7.10",
     "make-dir": "^3.1.0",
-    "opusscript": "^0.1.0",
-    "spotify-url-info": "^3.2.2",
-    "ytdl-core": "^4.11.4"
+    "opusscript": "^0.1.0"
+  },
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.4.10"
   }
 }
