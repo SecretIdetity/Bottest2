@@ -106,10 +106,10 @@ client.once('ready', async () => {
     echan = {}
     xchan = {}
     wchan = {}
-    for (let guild in data) {
-        echan[guild] = client.channels.cache.get(data[guild].epic);
-        xchan[guild] = client.channels.cache.get(data[guild].xk);
-        wchan[guild] = client.channels.cache.get(data[guild].wel);
+    for (let guild in data.d) {
+        echan[guild] = client.channels.cache.get(data.d[guild].epic);
+        xchan[guild] = client.channels.cache.get(data.d[guild].xk);
+        wchan[guild] = client.channels.cache.get(data.d[guild].wel);
     }
     c1 = await loadImage('./chess/1.png');
     c2 = await loadImage('./chess/2.png');
@@ -131,17 +131,17 @@ client.once('ready', async () => {
     c18 = await loadImage('./chess/18.png');
     for (let j in data) {
         if (j == 'ttt' || j == 'con' || j == 'chess')
-            for (let i in data[guild][j]) {
-                await client.users.fetch(data[guild][j][i].usr.id);
-                await client.users.fetch(data[guild][j][i].init.id);
-                data[guild][j][i].usr = client.users.cache.get(data[guild][j][i].usr.id);
-                data[guild][j][i].init = client.users.cache.get(data[guild][j][i].init.id);
+            for (let i in data.d[guild][j]) {
+                await client.users.fetch(data.d[guild][j][i].usr.id);
+                await client.users.fetch(data.d[guild][j][i].init.id);
+                data.d[guild][j][i].usr = client.users.cache.get(data.d[guild][j][i].usr.id);
+                data.d[guild][j][i].init = client.users.cache.get(data.d[guild][j][i].init.id);
             }
     }
-    for (let guild in data) {
-        for (let j in data[guild].message) {
-            let t = await client.channels.fetch(data[guild].message[j].channelId);
-            data[guild].message[j] = await t.messages.fetch(j);
+    for (let guild in data.d) {
+        for (let j in data.d[guild].message) {
+            let t = await client.channels.fetch(data.d[guild].message[j].channelId);
+            data.d[guild].message[j] = await t.messages.fetch(j);
         }
     }
     setStatus(0);
@@ -231,32 +231,32 @@ client.on("messageCreate", async message => {
         message.react('🙁');
         return;
     }
-    if (data[message.guild.id] == undefined) {
-        data[message.guild.id] = {}
-        data[message.guild.id].gid = message.guild.id;
-        data[message.guild.id].ttt = {};
-        data[message.guild.id].con = {};
-        data[message.guild.id].chess = {};
-        data[message.guild.id].chessusr = {};
-        data[message.guild.id].message = {};
-        data[message.guild.id].epicusr = {};
-        data[message.guild.id].prefix = '.';
-        data[message.guild.id].xk = '';
-        data[message.guild.id].epic = '';
-        data[message.guild.id].wel = '';
+    if (data.d[message.guild.id] == undefined) {
+        data.d[message.guild.id] = {}
+        data.d[message.guild.id].gid = message.guild.id;
+        data.d[message.guild.id].ttt = {};
+        data.d[message.guild.id].con = {};
+        data.d[message.guild.id].chess = {};
+        data.d[message.guild.id].chessusr = {};
+        data.d[message.guild.id].message = {};
+        data.d[message.guild.id].epicusr = {};
+        data.d[message.guild.id].prefix = '.';
+        data.d[message.guild.id].xk = '';
+        data.d[message.guild.id].epic = '';
+        data.d[message.guild.id].wel = '';
     }
-    if (message.content == data[message.guild.id].prefix) return;
-    if (!message.content.startsWith(data[message.guild.id].prefix)) return;
-    if (message.content.startsWith(data[message.guild.id].prefix + data[message.guild.id].prefix)) return;
+    if (message.content == data.d[message.guild.id].prefix) return;
+    if (!message.content.startsWith(data.d[message.guild.id].prefix)) return;
+    if (message.content.startsWith(data.d[message.guild.id].prefix + data.d[message.guild.id].prefix)) return;
     if (message.content.startsWith('.ty')) return; //temp because of overlap with tyrexe
     log.write(`${message.author.username}#${message.author.discriminator} in ${message.channel.name} ${message.guild.id} on ${new Intl.DateTimeFormat('en-GB', { dateStyle: 'full', timeStyle: 'short' }).format(new Date(message.createdTimestamp))}: ${message.content}\n`); //cmd debug
-    let commandBody = message.content.slice(data[message.guild.id].prefix.length);
+    let commandBody = message.content.slice(data.d[message.guild.id].prefix.length);
     const args = commandBody.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').split(' ');
     const command = args.shift().toLowerCase();
     let s = '';
     if (command === "ttt" || command === 'tictactoe' || command === '3') {
-        if (data[message.guild.id].ttt == undefined)
-            data[message.guild.id].ttt = {};
+        if (data.d[message.guild.id].ttt == undefined)
+            data.d[message.guild.id].ttt = {};
         let init = message.author;
         let turn = random(2);
         let user = args.shift();
@@ -297,13 +297,13 @@ client.on("messageCreate", async message => {
         const r2 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('a3').setLabel('.').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('a4').setLabel('.').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('a5').setLabel('.').setStyle(ButtonStyle.Secondary));
         const r3 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('a6').setLabel('.').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('a7').setLabel('.').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('a8').setLabel('.').setStyle(ButtonStyle.Secondary));
         let sent = await message.channel.send({ content: s, components: [r1, r2, r3] });
-        data[message.guild.id].ttt[sent.id] = {};
-        data[message.guild.id].ttt[sent.id].turn = turn;
-        data[message.guild.id].ttt[sent.id].init = init;
-        data[message.guild.id].ttt[sent.id].usr = usr;
-        data[message.guild.id].ttt[sent.id].channel = sent.channel.id;
-        data[message.guild.id].ttt[sent.id].data = new Array(9).fill(0);
-        data[message.guild.id].ttt[sent.id].time = new Date().getTime();
+        data.d[message.guild.id].ttt[sent.id] = {};
+        data.d[message.guild.id].ttt[sent.id].turn = turn;
+        data.d[message.guild.id].ttt[sent.id].init = init;
+        data.d[message.guild.id].ttt[sent.id].usr = usr;
+        data.d[message.guild.id].ttt[sent.id].channel = sent.channel.id;
+        data.d[message.guild.id].ttt[sent.id].data = new Array(9).fill(0);
+        data.d[message.guild.id].ttt[sent.id].time = new Date().getTime();
     }
     else if (command == 'u' || command == 'uno') {
         if (data.uno == undefined)
@@ -334,9 +334,9 @@ client.on("messageCreate", async message => {
         let sent = await message.channel.send({ content: "Use the Button to see your Deck.\nIt's only valid for 15 Minutes (per Discord).", components: [r1] });
         data.uno[sent.id] = {};
         data.uno[sent.id].turn = random(user.length);
-        data[message.guild.id].ttt[sent.id].channel = sent.channel.id;
-        data[message.guild.id].ttt[sent.id].data = new Array(9).fill(0);
-        data[message.guild.id].ttt[sent.id].user = user;
+        data.d[message.guild.id].ttt[sent.id].channel = sent.channel.id;
+        data.d[message.guild.id].ttt[sent.id].data = new Array(9).fill(0);
+        data.d[message.guild.id].ttt[sent.id].user = user;
     }
     else if (command == 'thisisthesupersecretdeletefunction') {
         //else if(command == 'del' || command == 'unspam' || command == 'delete'){
@@ -359,8 +359,8 @@ client.on("messageCreate", async message => {
         console.log(`${message.author} deleted ${i + 1} messages in ${channel.id}.`)
     }
     else if (command == '4win' || command == 'connect4' || command == '4' || command == 'connect') {
-        if (data[message.guild.id].con == undefined)
-            data[message.guild.id].con = {};
+        if (data.d[message.guild.id].con == undefined)
+            data.d[message.guild.id].con = {};
         let init = message.author;
         let turn = random(2);
         let user = args.shift();
@@ -404,13 +404,13 @@ client.on("messageCreate", async message => {
         const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('b0').setLabel('1').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b1').setLabel('2').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b2').setLabel('3').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b3').setLabel('4').setStyle(ButtonStyle.Secondary));
         const r2 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('b4').setLabel('5').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b5').setLabel('6').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b6').setLabel('7').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b7').setLabel('🏳️').setStyle(ButtonStyle.Danger));
         let sent = await message.channel.send({ content: s, components: [r1, r2] });
-        data[message.guild.id].con[sent.id] = {};
-        data[message.guild.id].con[sent.id].turn = turn;
-        data[message.guild.id].con[sent.id].init = init;
-        data[message.guild.id].con[sent.id].usr = usr;
-        data[message.guild.id].con[sent.id].channel = sent.channel.id;
-        data[message.guild.id].con[sent.id].data = new Array(42).fill(0);
-        data[message.guild.id].con[sent.id].time = new Date().getTime();
+        data.d[message.guild.id].con[sent.id] = {};
+        data.d[message.guild.id].con[sent.id].turn = turn;
+        data.d[message.guild.id].con[sent.id].init = init;
+        data.d[message.guild.id].con[sent.id].usr = usr;
+        data.d[message.guild.id].con[sent.id].channel = sent.channel.id;
+        data.d[message.guild.id].con[sent.id].data = new Array(42).fill(0);
+        data.d[message.guild.id].con[sent.id].time = new Date().getTime();
     }
     else if (command == 'test') {
         message.channel.send(`yaay ${message.author} test complete`);
@@ -448,20 +448,20 @@ client.on("messageCreate", async message => {
         catch (e) { }
     }
     else if (command == 'clear') {
-        data[message.guild.id].ttt = {};
-        data[message.guild.id].con = {};
-        data[message.guild.id].chess = {};
-        data[message.guild.id].chessusr = {};
-        data[message.guild.id].message = {};
+        data.d[message.guild.id].ttt = {};
+        data.d[message.guild.id].con = {};
+        data.d[message.guild.id].chess = {};
+        data.d[message.guild.id].chessusr = {};
+        data.d[message.guild.id].message = {};
         message.channel.send('cleared');
     }
     else if (command == 'clearall') {
-        for (let guild in data) {
-            data[guild].ttt = {};
-            data[guild].con = {};
-            data[guild].chess = {};
-            data[guild].chessusr = {};
-            data[guild].message = {};
+        for (let guild in data.d) {
+            data.d[guild].ttt = {};
+            data.d[guild].con = {};
+            data.d[guild].chess = {};
+            data.d[guild].chessusr = {};
+            data.d[guild].message = {};
         }
         message.channel.send('cleared all');
     }
@@ -505,12 +505,12 @@ client.on("messageCreate", async message => {
         }
     }
     else if (command == 'chess' || command == 'c' || command == '2') {
-        if (data[message.guild.id].chess == undefined)
-            data[message.guild.id].chess = {};
-        if (data[message.guild.id].chessusr == undefined)
-            data[message.guild.id].chessusr = {};
-        if (data[message.guild.id].message == undefined)
-            data[message.guild.id].message = {};
+        if (data.d[message.guild.id].chess == undefined)
+            data.d[message.guild.id].chess = {};
+        if (data.d[message.guild.id].chessusr == undefined)
+            data.d[message.guild.id].chessusr = {};
+        if (data.d[message.guild.id].message == undefined)
+            data.d[message.guild.id].message = {};
         let init = message.author;
         let color = random(2);
         let user = args.shift();
@@ -536,7 +536,7 @@ client.on("messageCreate", async message => {
         try {
             usr = us.user;
         } catch (e) { console.log(e); }
-        if (data[message.guild.id].chessusr[init.id] != undefined) {
+        if (data.d[message.guild.id].chessusr[init.id] != undefined) {
             message.channel.send(`You already have an active game of chess,\n${init}.`);
             return;
         }
@@ -548,16 +548,16 @@ client.on("messageCreate", async message => {
             message.channel.send(`You cannot challenge bots,\n${init}.`);
             return;
         }
-        if (data[message.guild.id].chessusr[usr.id] != undefined) {
+        if (data.d[message.guild.id].chessusr[usr.id] != undefined) {
             message.channel.send(`${usr.username} already has an active game of chess,\n${init}.`);
             return;
         }
         s = `${init} is playing chess against ${usr}\n`;
         if (color == 0) {
-            s += `It's ⬜${init}'s turn. Use ${data[message.guild.id].prefix}m/move pos1 pos2 to move your pieces.\nUse ${data[message.guild.id].prefix}d/${data[message.guild.id].prefix}draw to offer a draw and ${data[message.guild.id].prefix}resign to resign.`;
+            s += `It's ⬜${init}'s turn. Use ${data.d[message.guild.id].prefix}m/move pos1 pos2 to move your pieces.\nUse ${data.d[message.guild.id].prefix}d/${data.d[message.guild.id].prefix}draw to offer a draw and ${data.d[message.guild.id].prefix}resign to resign.`;
         }
         else {
-            s += `It's ⬜${usr}'s turn. Use ${data[message.guild.id].prefix}m/move pos1 pos2 to move your pieces.\nUse ${data[message.guild.id].prefix}d/${data[message.guild.id].prefix}draw to offer a draw and ${data[message.guild.id].prefix}resign to resign.`;
+            s += `It's ⬜${usr}'s turn. Use ${data.d[message.guild.id].prefix}m/move pos1 pos2 to move your pieces.\nUse ${data.d[message.guild.id].prefix}d/${data.d[message.guild.id].prefix}draw to offer a draw and ${data.d[message.guild.id].prefix}resign to resign.`;
         }
         let g = new Array(64).fill(0);
         let h = new Array(12).fill(0);
@@ -568,29 +568,29 @@ client.on("messageCreate", async message => {
         else
             await chessimg(dat, [-1, -1, -1, -1], g, init.username, usr.username, 0, h, n, n, 0);
         let sent = await message.channel.send({ content: s, files: [`${ddir}${n}.png`] });
-        data[message.guild.id].chess[sent.id] = {};
-        data[message.guild.id].chess[sent.id].turn = 0;
-        data[message.guild.id].chess[sent.id].color = color;
-        data[message.guild.id].chess[sent.id].init = init;
-        data[message.guild.id].chess[sent.id].usr = usr;
-        data[message.guild.id].chess[sent.id].channel = sent.channel.id;
-        data[message.guild.id].chess[sent.id].data = dat;
-        data[message.guild.id].chess[sent.id].extra = g;
-        data[message.guild.id].chess[sent.id].taken = h;
-        data[message.guild.id].chess[sent.id].draw = [0, 0, 0, 0];
-        data[message.guild.id].chess[sent.id].time = new Date().getTime();
-        data[message.guild.id].chessusr[usr.id] = sent.id;
-        data[message.guild.id].chessusr[init.id] = sent.id;
-        data[message.guild.id].message[sent.id] = sent;
+        data.d[message.guild.id].chess[sent.id] = {};
+        data.d[message.guild.id].chess[sent.id].turn = 0;
+        data.d[message.guild.id].chess[sent.id].color = color;
+        data.d[message.guild.id].chess[sent.id].init = init;
+        data.d[message.guild.id].chess[sent.id].usr = usr;
+        data.d[message.guild.id].chess[sent.id].channel = sent.channel.id;
+        data.d[message.guild.id].chess[sent.id].data = dat;
+        data.d[message.guild.id].chess[sent.id].extra = g;
+        data.d[message.guild.id].chess[sent.id].taken = h;
+        data.d[message.guild.id].chess[sent.id].draw = [0, 0, 0, 0];
+        data.d[message.guild.id].chess[sent.id].time = new Date().getTime();
+        data.d[message.guild.id].chessusr[usr.id] = sent.id;
+        data.d[message.guild.id].chessusr[init.id] = sent.id;
+        data.d[message.guild.id].message[sent.id] = sent;
         fs.renameSync(`${ddir}${n}`, `${ddir}${sent.id}`);
         fs.unlinkSync(`${ddir}${n}.png`);
     }
     else if (command == 'move' || command == 'm') {
-        if (data[message.guild.id].chessusr[message.author.id] == undefined) {
+        if (data.d[message.guild.id].chessusr[message.author.id] == undefined) {
             message.channel.send(`You do not have an active game,\n${message.author}.`);
             return;
         }
-        let chessdata = data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]];
+        let chessdata = data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]];
         if (chessdata.usr.id != chessdata.init.id)
             if ((chessdata.color + chessdata.turn) % 2 == 0) {
                 if (message.author.id != chessdata.init.id) {
@@ -652,7 +652,7 @@ client.on("messageCreate", async message => {
                 }
                 let q = '';
                 let pb = 0;
-                if (chessdata.data[p1] == 1 && p2 < 8) {
+                if (chessdata.data.d[p1] == 1 && p2 < 8) {
                     q = args.shift();
                     if (q == undefined) {
                         message.channel.send(`You must specify a unit to promote to after your second position with\nk/knight, b/bishop, r/rook, q/queen,\n${message.author}.`);
@@ -666,7 +666,7 @@ client.on("messageCreate", async message => {
                     else
                         pb = 1;
                 }
-                if (chessdata.data[p1] == 7 && p2 > 56) {
+                if (chessdata.data.d[p1] == 7 && p2 > 56) {
                     q = args.shift();
                     if (q == undefined) {
                         message.channel.send(`You must specify a unit to promote to after your second position with\nk/knight, b/bishop, r/rook, q/queen,\n${message.author}.`);
@@ -682,69 +682,69 @@ client.on("messageCreate", async message => {
                 let r = [-1, -1];
                 if (chessdata.draw[0] != 0) {
                     if (chessdata.draw[2] == 0)
-                        data[message.guild.id].message[chessdata.draw[0]].edit({ content: 'This draw offer has expired.', components: [] });
-                    delete data[message.guild.id].message[chessdata.draw[0]];
+                        data.d[message.guild.id].message[chessdata.draw[0]].edit({ content: 'This draw offer has expired.', components: [] });
+                    delete data.d[message.guild.id].message[chessdata.draw[0]];
                 }
                 if (chessdata.draw[1] != 0) {
                     if (chessdata.draw[3] == 0)
-                        if (data[message.guild.id].message[chessdata.draw[1]].content == s)
-                            data[message.guild.id].message[chessdata.draw[1]].edit({ content: 'This draw offer has expired.', components: [] });
-                    delete data[message.guild.id].message[chessdata.draw[1]];
+                        if (data.d[message.guild.id].message[chessdata.draw[1]].content == s)
+                            data.d[message.guild.id].message[chessdata.draw[1]].edit({ content: 'This draw offer has expired.', components: [] });
+                    delete data.d[message.guild.id].message[chessdata.draw[1]];
                 }
                 chessdata.draw = [0, 0, 0, 0];
                 chessdata.turn = (chessdata.turn + 1) % 2;
-                if (chessdata.data[p2] == 0)
-                    if (chessdata.data[p1] == 1 || chessdata.data[p1] == 7) {
+                if (chessdata.data.d[p2] == 0)
+                    if (chessdata.data.d[p1] == 1 || chessdata.data.d[p1] == 7) {
                         if (p1 - p2 == 7 || p1 - p2 == 9) {
-                            if (chessdata.data[p2 + 8] != 0)
-                                chessdata.taken[chessdata.data[p2 + 8] - 1]++;
-                            chessdata.data[p2 + 8] = 0;
+                            if (chessdata.data.d[p2 + 8] != 0)
+                                chessdata.taken[chessdata.data.d[p2 + 8] - 1]++;
+                            chessdata.data.d[p2 + 8] = 0;
                         }
                         if (p2 - p1 == 7 || p2 - p1 == 9) {
-                            if (chessdata.data[p2 - 8] != 0)
-                                chessdata.taken[chessdata.data[p2 - 8] - 1]++;
-                            chessdata.data[p2 - 8] = 0;
+                            if (chessdata.data.d[p2 - 8] != 0)
+                                chessdata.taken[chessdata.data.d[p2 - 8] - 1]++;
+                            chessdata.data.d[p2 - 8] = 0;
                         }
                     }
-                if (chessdata.data[p1] == 6 || chessdata.data[p1] == 12) {
+                if (chessdata.data.d[p1] == 6 || chessdata.data.d[p1] == 12) {
                     if (p2 == p1 + 2) {
-                        chessdata.data[p1 + 1] = chessdata.data[p1 + 3];
-                        chessdata.data[p1 + 3] = 0;
+                        chessdata.data.d[p1 + 1] = chessdata.data.d[p1 + 3];
+                        chessdata.data.d[p1 + 3] = 0;
                         r[0] = p1 + 1;
                         r[1] = p1 + 3;
                     }
                     if (p2 == p1 - 2) {
-                        chessdata.data[p1 - 1] = chessdata.data[p1 - 4];
-                        chessdata.data[p1 - 4] = 0;
+                        chessdata.data.d[p1 - 1] = chessdata.data.d[p1 - 4];
+                        chessdata.data.d[p1 - 4] = 0;
                         r[0] = p1 - 1;
                         r[1] = p1 - 4;
                     }
                 }
-                if (chessdata.data[p2] != 0)
-                    chessdata.taken[chessdata.data[p2] - 1]++;
-                chessdata.data[p2] = parseInt(chessdata.data[p1]);
-                chessdata.data[p1] = 0;
+                if (chessdata.data.d[p2] != 0)
+                    chessdata.taken[chessdata.data.d[p2] - 1]++;
+                chessdata.data.d[p2] = parseInt(chessdata.data.d[p1]);
+                chessdata.data.d[p1] = 0;
                 if (pb == 1)
                     switch (q) {
                         case 'b': case 'bishop':
-                            chessdata.data[p2] = 2;
+                            chessdata.data.d[p2] = 2;
                         case 'k': case 'knight':
-                            chessdata.data[p2] = 3;
+                            chessdata.data.d[p2] = 3;
                         case 'r': case 'rook':
-                            chessdata.data[p2] = 4;
+                            chessdata.data.d[p2] = 4;
                         case 'q': case 'queen':
-                            chessdata.data[p2] = 5;
+                            chessdata.data.d[p2] = 5;
                     }
                 if (pb == 2)
                     switch (q) {
                         case 'b': case 'bishop':
-                            chessdata.data[p2] = 8;
+                            chessdata.data.d[p2] = 8;
                         case 'k': case 'knight':
-                            chessdata.data[p2] = 9;
+                            chessdata.data.d[p2] = 9;
                         case 'r': case 'rook':
-                            chessdata.data[p2] = 10;
+                            chessdata.data.d[p2] = 10;
                         case 'q': case 'queen':
-                            chessdata.data[p2] = 11;
+                            chessdata.data.d[p2] = 11;
                     }
                 chessdata.extra[p1] += 1;
                 chessdata.extra.fill(0, 8, 15);
@@ -754,10 +754,10 @@ client.on("messageCreate", async message => {
                 if (p1 > 47 && p1 < 56 && p2 > 31 && p2 < 40)
                     chessdata.extra[p1] = 1;
                 //try{
-                //    data[message.guild.id].message[data[message.guild.id].chessusr[chessdata.init.id]].delete();
+                //    data.d[message.guild.id].message[data.d[message.guild.id].chessusr[chessdata.init.id]].delete();
                 //}catch(e){console.log(e);} //delete last message, deactivated for now @tyo
                 try {
-                    delete data[message.guild.id].message[data[message.guild.id].chessusr[chessdata.init.id]];
+                    delete data.d[message.guild.id].message[data.d[message.guild.id].chessusr[chessdata.init.id]];
                 } catch (e) { console.log(e); }
                 let p = chesscheck(chessdata.data, (chessdata.turn + 0) % 2, chessdata.extra);
                 let g = checkmate(chessdata.data, (chessdata.turn + 0) % 2, chessdata.extra);
@@ -769,21 +769,21 @@ client.on("messageCreate", async message => {
                         else
                             s = `${chessdata.usr} won against\n${chessdata.init} by checkmate.`;
                         if (chessdata.color)
-                            await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.usr.username, chessdata.init.username, (chessdata.turn + 1) % 2 + 2, chessdata.taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
+                            await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.usr.username, chessdata.init.username, (chessdata.turn + 1) % 2 + 2, chessdata.taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
                         else
-                            await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.init.username, chessdata.usr.username, (chessdata.turn + 1) % 2 + 2, chessdata.taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
+                            await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.init.username, chessdata.usr.username, (chessdata.turn + 1) % 2 + 2, chessdata.taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
                         let m = await message.channel.send({ content: s, files: [`${ddir}${message.id}.png`] });
                         fs.unlinkSync(`${ddir}${message.id}.png`);
-                        chessgif(data[message.guild.id].chessusr[message.author.id], m);
-                        let temp = JSON.parse(JSON.stringify(data[message.guild.id].chessusr[message.author.id]));
+                        chessgif(data.d[message.guild.id].chessusr[message.author.id], m);
+                        let temp = JSON.parse(JSON.stringify(data.d[message.guild.id].chessusr[message.author.id]));
                         try {
-                            delete data[message.guild.id].chessusr[chessdata.init.id];
+                            delete data.d[message.guild.id].chessusr[chessdata.init.id];
                         } catch (e) { console.log(e); }
                         try {
-                            delete data[message.guild.id].chessusr[chessdata.usr.id];
+                            delete data.d[message.guild.id].chessusr[chessdata.usr.id];
                         } catch (e) { console.log(e); }
                         try {
-                            delete data[message.guild.id].chess[temp];
+                            delete data.d[message.guild.id].chess[temp];
                         } catch (e) { console.log(e); }
                         return;
                     } else
@@ -793,29 +793,29 @@ client.on("messageCreate", async message => {
                     if (g == 1) {
                         s = `Draw between ${chessdata.init}\nand ${chessdata.usr}.`;
                         if (chessdata.color)
-                            await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.usr.username, chessdata.init.username, 4, chessdata.taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
+                            await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.usr.username, chessdata.init.username, 4, chessdata.taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
                         else
-                            await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.init.username, chessdata.usr.username, 4, chessdata.taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
+                            await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.init.username, chessdata.usr.username, 4, chessdata.taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
                         let m = await message.channel.send({ content: s, files: [`${ddir}${message.id}.png`] });
                         fs.unlinkSync(`${ddir}${message.id}.png`);
-                        chessgif(data[message.guild.id].chessusr[message.author.id], m);
-                        let temp = JSON.parse(JSON.stringify(data[message.guild.id].chessusr[message.author.id]));
+                        chessgif(data.d[message.guild.id].chessusr[message.author.id], m);
+                        let temp = JSON.parse(JSON.stringify(data.d[message.guild.id].chessusr[message.author.id]));
                         try {
-                            delete data[message.guild.id].chessusr[chessdata.init.id];
+                            delete data.d[message.guild.id].chessusr[chessdata.init.id];
                         } catch (e) { console.log(e); }
                         try {
-                            delete data[message.guild.id].chessusr[chessdata.usr.id];
+                            delete data.d[message.guild.id].chessusr[chessdata.usr.id];
                         } catch (e) { console.log(e); }
                         try {
-                            delete data[message.guild.id].chess[temp];
+                            delete data.d[message.guild.id].chess[temp];
                         } catch (e) { console.log(e); }
                         return;
                     }
                 }
                 if (chessdata.color)
-                    await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.usr.username, chessdata.init.username, chessdata.turn, chessdata.taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
+                    await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.usr.username, chessdata.init.username, chessdata.turn, chessdata.taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
                 else
-                    await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.init.username, chessdata.usr.username, chessdata.turn, chessdata.taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
+                    await chessimg(chessdata.data, [p1, p2, r[0], r[1]], chessdata.extra, chessdata.init.username, chessdata.usr.username, chessdata.turn, chessdata.taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
                 if (chessdata.turn == 1)
                     s += `It's ⬛`;
                 else
@@ -828,131 +828,131 @@ client.on("messageCreate", async message => {
                 }
                 s += t;
                 let sent = await message.channel.send({ content: s, files: [`${ddir}${message.id}.png`] });
-                fs.renameSync(`${ddir}${data[message.guild.id].chessusr[message.author.id]}`, `${ddir}${sent.id}`);
+                fs.renameSync(`${ddir}${data.d[message.guild.id].chessusr[message.author.id]}`, `${ddir}${sent.id}`);
                 fs.unlinkSync(`${ddir}${message.id}.png`);
-                data[message.guild.id].chess[sent.id] = JSON.parse(JSON.stringify(chessdata));
-                data[message.guild.id].chess[sent.id].time = new Date().getTime();
-                data[message.guild.id].chess[sent.id].channel = message.channel.id;
-                data[message.guild.id].message[sent.id] = sent;
-                delete data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]];
-                data[message.guild.id].chessusr[chessdata.usr.id] = sent.id;
-                data[message.guild.id].chessusr[chessdata.init.id] = sent.id;
-                await client.users.fetch(data[message.guild.id].chess[sent.id].usr.id);
-                await client.users.fetch(data[message.guild.id].chess[sent.id].init.id);
-                data[message.guild.id].chess[sent.id].usr = client.users.cache.get(data[message.guild.id].chess[sent.id].usr.id);
-                data[message.guild.id].chess[sent.id].init = client.users.cache.get(data[message.guild.id].chess[sent.id].init.id);
+                data.d[message.guild.id].chess[sent.id] = JSON.parse(JSON.stringify(chessdata));
+                data.d[message.guild.id].chess[sent.id].time = new Date().getTime();
+                data.d[message.guild.id].chess[sent.id].channel = message.channel.id;
+                data.d[message.guild.id].message[sent.id] = sent;
+                delete data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]];
+                data.d[message.guild.id].chessusr[chessdata.usr.id] = sent.id;
+                data.d[message.guild.id].chessusr[chessdata.init.id] = sent.id;
+                await client.users.fetch(data.d[message.guild.id].chess[sent.id].usr.id);
+                await client.users.fetch(data.d[message.guild.id].chess[sent.id].init.id);
+                data.d[message.guild.id].chess[sent.id].usr = client.users.cache.get(data.d[message.guild.id].chess[sent.id].usr.id);
+                data.d[message.guild.id].chess[sent.id].init = client.users.cache.get(data.d[message.guild.id].chess[sent.id].init.id);
         }
     }
     else if (command == 'resign') {
-        if (data[message.guild.id].chessusr[message.author.id] == undefined) {
+        if (data.d[message.guild.id].chessusr[message.author.id] == undefined) {
             message.channel.send(`You do not have an active game,\n${message.author}.`);
             return;
         }
         //try{
-        //    data[message.guild.id].message[data[message.guild.id].chessusr[message.author.id]].delete();
+        //    data.d[message.guild.id].message[data.d[message.guild.id].chessusr[message.author.id]].delete();
         //}catch(e){console.log(e);};
-        if (data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.id == message.author.id) {
-            if (data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].color)
-                await chessimg(data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].extra, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr.username, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.username, 2, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
+        if (data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.id == message.author.id) {
+            if (data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].color)
+                await chessimg(data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].extra, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr.username, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.username, 2, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
             else
-                await chessimg(data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].extra, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.username, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr.username, 3, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
-            let m = await message.channel.send({ content: `The winner is ${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr},\n${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init} resigned.`, files: [`${ddir}${message.id}.png`] });
+                await chessimg(data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].extra, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.username, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr.username, 3, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
+            let m = await message.channel.send({ content: `The winner is ${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr},\n${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init} resigned.`, files: [`${ddir}${message.id}.png`] });
             fs.unlinkSync(`${ddir}${message.id}.png`);
-            chessgif(data[message.guild.id].chessusr[message.author.id], m);
+            chessgif(data.d[message.guild.id].chessusr[message.author.id], m);
         }
-        else if (data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr.id == message.author.id) {
-            if (data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].color)
-                await chessimg(data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].extra, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr.username, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.username, 3, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
+        else if (data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr.id == message.author.id) {
+            if (data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].color)
+                await chessimg(data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].extra, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr.username, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.username, 3, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
             else
-                await chessimg(data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].extra, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.username, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr.username, 2, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
-            let m = await message.channel.send({ content: `The winner is ${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init},\n${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr} resigned.`, files: [`${ddir}${message.id}.png`] });
+                await chessimg(data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].extra, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.username, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr.username, 2, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
+            let m = await message.channel.send({ content: `The winner is ${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init},\n${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr} resigned.`, files: [`${ddir}${message.id}.png`] });
             fs.unlinkSync(`${ddir}${message.id}.png`);
-            chessgif(data[message.guild.id].chessusr[message.author.id], m);
+            chessgif(data.d[message.guild.id].chessusr[message.author.id], m);
         }
         try {
-            delete data[message.guild.id].message[data[message.guild.id].chessusr[data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.id]];
+            delete data.d[message.guild.id].message[data.d[message.guild.id].chessusr[data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.id]];
         } catch (e) { console.log(e); }
-        let temp = JSON.parse(JSON.stringify(data[message.guild.id].chessusr[message.author.id]));
+        let temp = JSON.parse(JSON.stringify(data.d[message.guild.id].chessusr[message.author.id]));
         try {
-            delete data[message.guild.id].chessusr[data[message.guild.id].chess[temp].usr.id];
-        } catch (e) { console.log(e); }
-        try {
-            delete data[message.guild.id].chessusr[data[message.guild.id].chess[temp].init.id];
+            delete data.d[message.guild.id].chessusr[data.d[message.guild.id].chess[temp].usr.id];
         } catch (e) { console.log(e); }
         try {
-            delete data[message.guild.id].chess[temp];
+            delete data.d[message.guild.id].chessusr[data.d[message.guild.id].chess[temp].init.id];
+        } catch (e) { console.log(e); }
+        try {
+            delete data.d[message.guild.id].chess[temp];
         } catch (e) { console.log(e); }
     }
     else if (command == 'draw' || command == 'd') {
-        if (data[message.guild.id].chessusr[message.author.id] == undefined) {
+        if (data.d[message.guild.id].chessusr[message.author.id] == undefined) {
             message.channel.send(`You do not have an active game,\n${message.author}.`);
             return;
         }
-        if (data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.id == message.author.id) {
-            if (data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].draw[1] != 0) {
-                if (data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].color)
-                    await chessimg(data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].extra, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr.username, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.username, 4, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
+        if (data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.id == message.author.id) {
+            if (data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].draw[1] != 0) {
+                if (data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].color)
+                    await chessimg(data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].extra, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr.username, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.username, 4, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
                 else
-                    await chessimg(data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].extra, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.username, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr.username, 4, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
-                let m = await message.channel.send({ content: `Draw between ${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init}\nand ${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr}.`, files: [`${ddir}${message.id}.png`] });
+                    await chessimg(data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].extra, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.username, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr.username, 4, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
+                let m = await message.channel.send({ content: `Draw between ${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init}\nand ${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr}.`, files: [`${ddir}${message.id}.png`] });
                 fs.unlinkSync(`${ddir}${message.id}.png`);
-                chessgif(data[message.guild.id].chessusr[message.author.id], m);
+                chessgif(data.d[message.guild.id].chessusr[message.author.id], m);
                 try {
-                    delete data[message.guild.id].message[data[message.guild.id].chessusr[data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.id]];
+                    delete data.d[message.guild.id].message[data.d[message.guild.id].chessusr[data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.id]];
                 } catch (e) { console.log(e); }
-                let temp = JSON.parse(JSON.stringify(data[message.guild.id].chessusr[message.author.id]));
+                let temp = JSON.parse(JSON.stringify(data.d[message.guild.id].chessusr[message.author.id]));
                 try {
-                    delete data[message.guild.id].chessusr[data[message.guild.id].chess[temp].usr.id];
-                } catch (e) { console.log(e); }
-                try {
-                    delete data[message.guild.id].chessusr[data[message.guild.id].chess[temp].init.id];
+                    delete data.d[message.guild.id].chessusr[data.d[message.guild.id].chess[temp].usr.id];
                 } catch (e) { console.log(e); }
                 try {
-                    delete data[message.guild.id].chess[temp];
+                    delete data.d[message.guild.id].chessusr[data.d[message.guild.id].chess[temp].init.id];
+                } catch (e) { console.log(e); }
+                try {
+                    delete data.d[message.guild.id].chess[temp];
                 } catch (e) { console.log(e); }
                 return;
             }
-            if (data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].draw[0] != 0) {
+            if (data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].draw[0] != 0) {
                 message.channel.send(`You already offered a draw,\n${message.author}.`);
                 return;
             }
-            const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`da${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr.id}`).setLabel('✓').setStyle(ButtonStyle.Success), new ButtonBuilder().setCustomId(`dr${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr.id}`).setLabel('✗').setStyle(ButtonStyle.Danger));
-            let msg = await message.channel.send({ content: `${message.author} has offered you a draw, ${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr}.\nDo you accept?`, components: [r1] });
-            data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].draw[0] = msg.id;
-            data[message.guild.id].message[msg.id] = msg;
+            const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`da${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr.id}`).setLabel('✓').setStyle(ButtonStyle.Success), new ButtonBuilder().setCustomId(`dr${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr.id}`).setLabel('✗').setStyle(ButtonStyle.Danger));
+            let msg = await message.channel.send({ content: `${message.author} has offered you a draw, ${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr}.\nDo you accept?`, components: [r1] });
+            data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].draw[0] = msg.id;
+            data.d[message.guild.id].message[msg.id] = msg;
         }
         else {
-            if (data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].draw[0] != 0) {
-                if (data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].color)
-                    await chessimg(data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].extra, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr.username, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.username, 4, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
+            if (data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].draw[0] != 0) {
+                if (data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].color)
+                    await chessimg(data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].extra, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr.username, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.username, 4, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
                 else
-                    await chessimg(data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].extra, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.username, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr.username, 4, data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].taken, message.id, data[message.guild.id].chessusr[message.author.id], 1);
-                let m = await message.channel.send({ content: `Draw between ${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init}\nand ${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].usr}.`, files: [`${ddir}${message.id}.png`] });
+                    await chessimg(data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].data, [-1, -1, -1, -1], data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].extra, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.username, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr.username, 4, data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].taken, message.id, data.d[message.guild.id].chessusr[message.author.id], 1);
+                let m = await message.channel.send({ content: `Draw between ${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init}\nand ${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].usr}.`, files: [`${ddir}${message.id}.png`] });
                 fs.unlinkSync(`${ddir}${message.id}.png`);
-                chessgif(data[message.guild.id].chessusr[message.author.id], m);
+                chessgif(data.d[message.guild.id].chessusr[message.author.id], m);
                 try {
-                    delete data[message.guild.id].message[data[message.guild.id].chessusr[data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.id]];
+                    delete data.d[message.guild.id].message[data.d[message.guild.id].chessusr[data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.id]];
                 } catch (e) { console.log(e); }
-                let temp = JSON.parse(JSON.stringify(data[message.guild.id].chessusr[message.author.id]));
+                let temp = JSON.parse(JSON.stringify(data.d[message.guild.id].chessusr[message.author.id]));
                 try {
-                    delete data[message.guild.id].chessusr[data[message.guild.id].chess[temp].usr.id];
-                } catch (e) { console.log(e); }
-                try {
-                    delete data[message.guild.id].chessusr[data[message.guild.id].chess[temp].init.id];
+                    delete data.d[message.guild.id].chessusr[data.d[message.guild.id].chess[temp].usr.id];
                 } catch (e) { console.log(e); }
                 try {
-                    delete data[message.guild.id].chess[temp];
+                    delete data.d[message.guild.id].chessusr[data.d[message.guild.id].chess[temp].init.id];
+                } catch (e) { console.log(e); }
+                try {
+                    delete data.d[message.guild.id].chess[temp];
                 } catch (e) { console.log(e); }
                 return;
             }
-            if (data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].draw[1] != 0) {
+            if (data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].draw[1] != 0) {
                 message.channel.send(`You already offered a draw,\n${message.author}.`);
                 return;
             }
-            const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`da${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.id}`).setLabel('✓').setStyle(ButtonStyle.Success), new ButtonBuilder().setCustomId(`dr${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init.id}`).setLabel('✗').setStyle(ButtonStyle.Danger));
-            let msg = await message.channel.send({ content: `${message.author} has offered you a draw, ${data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].init}.\nDo you accept?`, components: [r1] });
-            data[message.guild.id].chess[data[message.guild.id].chessusr[message.author.id]].draw[1] = msg.id;
-            data[message.guild.id].message[msg.id] = msg;
+            const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`da${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.id}`).setLabel('✓').setStyle(ButtonStyle.Success), new ButtonBuilder().setCustomId(`dr${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init.id}`).setLabel('✗').setStyle(ButtonStyle.Danger));
+            let msg = await message.channel.send({ content: `${message.author} has offered you a draw, ${data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].init}.\nDo you accept?`, components: [r1] });
+            data.d[message.guild.id].chess[data.d[message.guild.id].chessusr[message.author.id]].draw[1] = msg.id;
+            data.d[message.guild.id].message[msg.id] = msg;
         }
     }
     else if (command == 'r' || command == 'roll') {
@@ -968,14 +968,14 @@ client.on("messageCreate", async message => {
             a = '1' + a;
         let b = a.split('d');
         if (b.length != 2) {
-            message.channel.send(`Please enter a valid command using ${data[message.guild.id].prefix}r/roll ([n rolls]**d**)[n sides(+[add n])],\n${message.author}.`);
+            message.channel.send(`Please enter a valid command using ${data.d[message.guild.id].prefix}r/roll ([n rolls]**d**)[n sides(+[add n])],\n${message.author}.`);
             return;
         }
         b[2] = 0;
         if (b[1].includes('+')) {
             let c = b[1].split('+');
             if (c.length != 2 || !/^\d+$/.test(c[0]) || !/^\d+$/.test(c[1])) {
-                message.channel.send(`Please enter a valid command using ${data[message.guild.id].prefix}r/roll ([n rolls]**d**)[n sides(+[add n])],\n${message.author}.`);
+                message.channel.send(`Please enter a valid command using ${data.d[message.guild.id].prefix}r/roll ([n rolls]**d**)[n sides(+[add n])],\n${message.author}.`);
                 return;
             }
             b[1] = parseInt(c[0]);
@@ -984,7 +984,7 @@ client.on("messageCreate", async message => {
         else if (b[1].includes('-')) {
             let c = b[1].split('-');
             if (c.length != 2 || !/^\d+$/.test(c[0]) || !/^\d+$/.test(c[1])) {
-                message.channel.send(`Please enter a valid command using ${data[message.guild.id].prefix}r/roll ([n rolls]**d**)[n sides(+[add n])],\n${message.author}.`);
+                message.channel.send(`Please enter a valid command using ${data.d[message.guild.id].prefix}r/roll ([n rolls]**d**)[n sides(+[add n])],\n${message.author}.`);
                 return;
             }
             b[1] = parseInt(c[0]);
@@ -992,7 +992,7 @@ client.on("messageCreate", async message => {
         }
         b[2] += 1;
         if (!/^\d+$/.test(b[0]) || !/^\d+$/.test(b[1])) {
-            message.channel.send(`Please enter a valid command using ${data[message.guild.id].prefix}r/roll ([n rolls]**d**)[n sides(+[add n])],\n${message.author}.`);
+            message.channel.send(`Please enter a valid command using ${data.d[message.guild.id].prefix}r/roll ([n rolls]**d**)[n sides(+[add n])],\n${message.author}.`);
             return;
         }
         if (b[0] > 1000000) {
@@ -1050,7 +1050,7 @@ client.on("messageCreate", async message => {
             case 's':
                 message.channel.send(`Set Channel for welcome-messages to ${message.channel}.`);
                 wchan[message.guild.id] = message.channel;
-                data[message.guild.id].wel = wchan[message.guild.id].id;
+                data.d[message.guild.id].wel = wchan[message.guild.id].id;
                 break;
             case 'g':
                 message.channel.send(`Channel for welcome-messages is ${wchan[message.guild.id]}.`);
@@ -1071,7 +1071,7 @@ client.on("messageCreate", async message => {
             case 's':
                 message.channel.send(`Set Channel for the latest xkcd to ${message.channel}.`);
                 xchan[message.guild.id] = message.channel;
-                data[message.guild.id].xk = xchan[message.guild.id].id;
+                data.d[message.guild.id].xk = xchan[message.guild.id].id;
                 break;
             case 'g':
                 message.channel.send(`Channel for the latest xkcd is ${xchan[message.guild.id]}.`);
@@ -1125,19 +1125,19 @@ client.on("messageCreate", async message => {
         switch (a) {
             case 's':
                 echan[message.guild.id] = message.channel;
-                data[message.guild.id].epic = echan[message.guild.id].id;
+                data.d[message.guild.id].epic = echan[message.guild.id].id;
                 message.channel.send(`Set Channel for free games on EpicGames and Steam to ${message.channel}.`);
                 break;
             case 'g':
                 message.channel.send(`Channel for free games on EpicGames and Steam is ${echan[message.guild.id]}.`);
                 break;
             case 'p': case 'ping':
-                if (data[message.guild.id].epicusr[message.author.id] == undefined) {
-                    data[message.guild.id].epicusr[message.author.id] = message.author.id.toString();
+                if (data.d[message.guild.id].epicusr[message.author.id] == undefined) {
+                    data.d[message.guild.id].epicusr[message.author.id] = message.author.id.toString();
                     message.channel.send(`Added ${message.author} to get pinged for free games on EpicGames and Steam.`);
                 }
                 else {
-                    delete data[message.guild.id].epicusr[message.author.id];
+                    delete data.d[message.guild.id].epicusr[message.author.id];
                     message.channel.send(`${message.author} will not get pinged for free games on EpicGames and Steam.`);
                 }
                 break;
@@ -1149,32 +1149,32 @@ client.on("messageCreate", async message => {
     else if (command == 'mine' || command == 'minesweeper') {
         let a = args.shift();
         if (a == undefined) {
-            message.channel.send(`Please specify a valid width using ${data[message.guild.id].prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
+            message.channel.send(`Please specify a valid width using ${data.d[message.guild.id].prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
             return;
         }
         a = a.toLowerCase();
         let b = args.shift();
         if (a == undefined) {
-            message.channel.send(`Please specify a valid heigth using ${data[message.guild.id].prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
+            message.channel.send(`Please specify a valid heigth using ${data.d[message.guild.id].prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
             return;
         }
         b = b.toLowerCase();
         let c = args.shift();
         if (a == undefined) {
-            message.channel.send(`Please specify a valid amount of mines using ${data[message.guild.id].prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
+            message.channel.send(`Please specify a valid amount of mines using ${data.d[message.guild.id].prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
             return;
         }
         c = c.toLowerCase();
         if (!/^\d+$/.test(a)) {
-            message.channel.send(`Please specify a valid width using ${data[message.guild.id].prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
+            message.channel.send(`Please specify a valid width using ${data.d[message.guild.id].prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
             return;
         }
         if (!/^\d+$/.test(b)) {
-            message.channel.send(`Please specify a valid heigth using ${data[message.guild.id].prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
+            message.channel.send(`Please specify a valid heigth using ${data.d[message.guild.id].prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
             return;
         }
         if (!/^\d+$/.test(c)) {
-            message.channel.send(`Please specify a valid amount of mines using ${data[message.guild.id].prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
+            message.channel.send(`Please specify a valid amount of mines using ${data.d[message.guild.id].prefix}minesweeper [width] [height] [amount of mines],\n${message.author}.`);
             return;
         }
         if (a * b < c) {
@@ -1589,23 +1589,23 @@ client.on("messageCreate", async message => {
             .setColor('#1a57f0')
             .setTitle('Currently aviable commands:\n[] = required, () = optional')
             .addFields(
-                { name: 'Help', value: `Use ${data[message.guild.id].prefix}help/${data[message.guild.id].prefix}h to show this message.` },
-                { name: 'TicTacToe', value: `Initiate a game with ${data[message.guild.id].prefix}tictactoe/${data[message.guild.id].prefix}ttt/${data[message.guild.id].prefix}3 followed by pinging the opponent.` },
-                { name: 'Connect 4', value: `Initiate a game with ${data[message.guild.id].prefix}connect4/${data[message.guild.id].prefix}4win/${data[message.guild.id].prefix}4 followed by pinging the opponent.` },
-                { name: 'Chess', value: `Initiate a game with ${data[message.guild.id].prefix}chess/${data[message.guild.id].prefix}2 followed by pinging the opponent.\nUse ${data[message.guild.id].prefix}move/${data[message.guild.id].prefix}m [move from] [move to] to move your pieces.\nUse ${data[message.guild.id].prefix}resign to resign your game and ${data[message.guild.id].prefix}draw/${data[message.guild.id].prefix}d to offer a draw.` },
-                { name: 'Roll Dices', value: `Use ${data[message.guild.id].prefix}roll/${data[message.guild.id].prefix}r ([n times]**d**)[n sides(+[add n])] to roll some dices.` },
-                { name: '8Ball', value: `Use ${data[message.guild.id].prefix}8ball/${data[message.guild.id].prefix}8 followed by a question to get a response.` },
-                { name: 'Fortune Cookie', value: `Use ${data[message.guild.id].prefix}fortune/${data[message.guild.id].prefix}f to get a fortune cookie.` },
-                { name: 'MineSweeper', value: `Use ${data[message.guild.id].prefix}minesweeper/${data[message.guild.id].prefix}mine [width] [height] [amount of mines] to start a game.` },
-                { name: 'xkcd Feed', value: `Use ${data[message.guild.id].prefix}xkcd/${data[message.guild.id].prefix}x set/s in the desired channel to have the latest xckd comic posted there.\nUse ${data[message.guild.id].prefix}xkcd/${data[message.guild.id].prefix}x get/g to get the channel they are posted in.` },
-                { name: 'Free Games', value: `Use ${data[message.guild.id].prefix}epic/${data[message.guild.id].prefix}e ping/p to get pinged for free games.\nUse ${data[message.guild.id].prefix}epic/${data[message.guild.id].prefix}e set/s in the desired channel to have free games on EpicGames and Steam posted there.\nUse ${data[message.guild.id].prefix}epic/${data[message.guild.id].prefix}e get/g to get the channel they are posted in.` },
-                { name: 'Welcome Message', value: `Use ${data[message.guild.id].prefix}welcome/${data[message.guild.id].prefix}w set/s in the desired channel to have Welcome-messages posted there.\nUse ${data[message.guild.id].prefix}welcome/${data[message.guild.id].prefix}w get/g to get the channel they are posted in.` },
-                { name: 'Wikis', value: `Use ${data[message.guild.id].prefix}wiki (language) (wikipedia/fandom [fandom name]) [search term] to search for a wiki page.\nThis feature is still a work in progress.` }
+                { name: 'Help', value: `Use ${data.d[message.guild.id].prefix}help/${data.d[message.guild.id].prefix}h to show this message.` },
+                { name: 'TicTacToe', value: `Initiate a game with ${data.d[message.guild.id].prefix}tictactoe/${data.d[message.guild.id].prefix}ttt/${data.d[message.guild.id].prefix}3 followed by pinging the opponent.` },
+                { name: 'Connect 4', value: `Initiate a game with ${data.d[message.guild.id].prefix}connect4/${data.d[message.guild.id].prefix}4win/${data.d[message.guild.id].prefix}4 followed by pinging the opponent.` },
+                { name: 'Chess', value: `Initiate a game with ${data.d[message.guild.id].prefix}chess/${data.d[message.guild.id].prefix}2 followed by pinging the opponent.\nUse ${data.d[message.guild.id].prefix}move/${data.d[message.guild.id].prefix}m [move from] [move to] to move your pieces.\nUse ${data.d[message.guild.id].prefix}resign to resign your game and ${data.d[message.guild.id].prefix}draw/${data.d[message.guild.id].prefix}d to offer a draw.` },
+                { name: 'Roll Dices', value: `Use ${data.d[message.guild.id].prefix}roll/${data.d[message.guild.id].prefix}r ([n times]**d**)[n sides(+[add n])] to roll some dices.` },
+                { name: '8Ball', value: `Use ${data.d[message.guild.id].prefix}8ball/${data.d[message.guild.id].prefix}8 followed by a question to get a response.` },
+                { name: 'Fortune Cookie', value: `Use ${data.d[message.guild.id].prefix}fortune/${data.d[message.guild.id].prefix}f to get a fortune cookie.` },
+                { name: 'MineSweeper', value: `Use ${data.d[message.guild.id].prefix}minesweeper/${data.d[message.guild.id].prefix}mine [width] [height] [amount of mines] to start a game.` },
+                { name: 'xkcd Feed', value: `Use ${data.d[message.guild.id].prefix}xkcd/${data.d[message.guild.id].prefix}x set/s in the desired channel to have the latest xckd comic posted there.\nUse ${data.d[message.guild.id].prefix}xkcd/${data.d[message.guild.id].prefix}x get/g to get the channel they are posted in.` },
+                { name: 'Free Games', value: `Use ${data.d[message.guild.id].prefix}epic/${data.d[message.guild.id].prefix}e ping/p to get pinged for free games.\nUse ${data.d[message.guild.id].prefix}epic/${data.d[message.guild.id].prefix}e set/s in the desired channel to have free games on EpicGames and Steam posted there.\nUse ${data.d[message.guild.id].prefix}epic/${data.d[message.guild.id].prefix}e get/g to get the channel they are posted in.` },
+                { name: 'Welcome Message', value: `Use ${data.d[message.guild.id].prefix}welcome/${data.d[message.guild.id].prefix}w set/s in the desired channel to have Welcome-messages posted there.\nUse ${data.d[message.guild.id].prefix}welcome/${data.d[message.guild.id].prefix}w get/g to get the channel they are posted in.` },
+                { name: 'Wikis', value: `Use ${data.d[message.guild.id].prefix}wiki (language) (wikipedia/fandom [fandom name]) [search term] to search for a wiki page.\nThis feature is still a work in progress.` }
             );
         message.channel.send({ embeds: [embed] });
     }
     else {
-        message.channel.send(`The command you specified does not exist, ${message.author}.\nUse ${data[message.guild.id].prefix}help to see all commands.`);
+        message.channel.send(`The command you specified does not exist, ${message.author}.\nUse ${data.d[message.guild.id].prefix}help to see all commands.`);
     }
 })
 client.on('interactionCreate', async i => {
@@ -1636,38 +1636,38 @@ client.on('interactionCreate', async i => {
         switch (a) {
             case 'a':
                 b = Number.parseInt(i.customId.charAt(1).toString());
-                if (data[i.guild.id].ttt == undefined) return;
-                if (data[i.guild.id].ttt[i.message.id] == undefined) return;
-                if (i.member.user.id != data[i.guild.id].ttt[i.message.id].usr.id && i.member.user.id != data[i.guild.id].ttt[i.message.id].init.id) return;
+                if (data.d[i.guild.id].ttt == undefined) return;
+                if (data.d[i.guild.id].ttt[i.message.id] == undefined) return;
+                if (i.member.user.id != data.d[i.guild.id].ttt[i.message.id].usr.id && i.member.user.id != data.d[i.guild.id].ttt[i.message.id].init.id) return;
                 if (b == 9) {
-                    const r1 = new ActionRowBuilder().addComponents(setttt(data[i.guild.id].ttt[i.message.id].data, '0').setDisabled(true), setttt(data[i.guild.id].ttt[i.message.id].data, '1').setDisabled(true), setttt(data[i.guild.id].ttt[i.message.id].data, '2').setDisabled(true));
-                    const r2 = new ActionRowBuilder().addComponents(setttt(data[i.guild.id].ttt[i.message.id].data, '3').setDisabled(true), setttt(data[i.guild.id].ttt[i.message.id].data, '4').setDisabled(true), setttt(data[i.guild.id].ttt[i.message.id].data, '5').setDisabled(true));
-                    const r3 = new ActionRowBuilder().addComponents(setttt(data[i.guild.id].ttt[i.message.id].data, '6').setDisabled(true), setttt(data[i.guild.id].ttt[i.message.id].data, '7').setDisabled(true), setttt(data[i.guild.id].ttt[i.message.id].data, '8').setDisabled(true));
-                    if (i.member.user.id == data[i.guild.id].ttt[i.message.id].usr.id)
-                        i.message.edit({ content: `The winner is ${data[i.guild.id].ttt[i.message.id].init},\n${data[i.guild.id].ttt[i.message.id].usr} resigned.`, components: [r1, r2, r3] });
-                    if (i.member.user.id == data[i.guild.id].ttt[i.message.id].init.id)
-                        i.message.edit({ content: `The winner is ${data[i.guild.id].ttt[i.message.id].usr},\n${data[i.guild.id].ttt[i.message.id].init} resigned.`, components: [r1, r2, r3] });
-                    delete data[i.guild.id].ttt[i.message.id];
+                    const r1 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '0').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '1').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '2').setDisabled(true));
+                    const r2 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '3').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '4').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '5').setDisabled(true));
+                    const r3 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '6').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '7').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '8').setDisabled(true));
+                    if (i.member.user.id == data.d[i.guild.id].ttt[i.message.id].usr.id)
+                        i.message.edit({ content: `The winner is ${data.d[i.guild.id].ttt[i.message.id].init},\n${data.d[i.guild.id].ttt[i.message.id].usr} resigned.`, components: [r1, r2, r3] });
+                    if (i.member.user.id == data.d[i.guild.id].ttt[i.message.id].init.id)
+                        i.message.edit({ content: `The winner is ${data.d[i.guild.id].ttt[i.message.id].usr},\n${data.d[i.guild.id].ttt[i.message.id].init} resigned.`, components: [r1, r2, r3] });
+                    delete data.d[i.guild.id].ttt[i.message.id];
                     return;
                 }
-                if (data[i.guild.id].ttt[i.message.id].turn == 0) {
-                    if (i.member.user.id != data[i.guild.id].ttt[i.message.id].init.id)
+                if (data.d[i.guild.id].ttt[i.message.id].turn == 0) {
+                    if (i.member.user.id != data.d[i.guild.id].ttt[i.message.id].init.id)
                         return;
                 }
                 else {
-                    if (i.member.user.id != data[i.guild.id].ttt[i.message.id].usr.id)
+                    if (i.member.user.id != data.d[i.guild.id].ttt[i.message.id].usr.id)
                         return;
                 }
-                if (data[i.guild.id].ttt[i.message.id].data[b] != 0)
+                if (data.d[i.guild.id].ttt[i.message.id].data.d[b] != 0)
                     return;
-                data[i.guild.id].ttt[i.message.id].data[b] = data[i.guild.id].ttt[i.message.id].turn + 1;
-                c = await checkttt(data[i.guild.id].ttt[i.message.id].data);
+                data.d[i.guild.id].ttt[i.message.id].data.d[b] = data.d[i.guild.id].ttt[i.message.id].turn + 1;
+                c = await checkttt(data.d[i.guild.id].ttt[i.message.id].data);
                 if (c == '9') {
-                    const r1 = new ActionRowBuilder().addComponents(setttt(data[i.guild.id].ttt[i.message.id].data, '0').setDisabled(true), setttt(data[i.guild.id].ttt[i.message.id].data, '1').setDisabled(true), setttt(data[i.guild.id].ttt[i.message.id].data, '2').setDisabled(true));
-                    const r2 = new ActionRowBuilder().addComponents(setttt(data[i.guild.id].ttt[i.message.id].data, '3').setDisabled(true), setttt(data[i.guild.id].ttt[i.message.id].data, '4').setDisabled(true), setttt(data[i.guild.id].ttt[i.message.id].data, '5').setDisabled(true));
-                    const r3 = new ActionRowBuilder().addComponents(setttt(data[i.guild.id].ttt[i.message.id].data, '6').setDisabled(true), setttt(data[i.guild.id].ttt[i.message.id].data, '7').setDisabled(true), setttt(data[i.guild.id].ttt[i.message.id].data, '8').setDisabled(true));
-                    i.message.edit({ content: `Draw between ${data[i.guild.id].ttt[i.message.id].init}\nand ${data[i.guild.id].ttt[i.message.id].usr}.`, components: [r1, r2, r3] });
-                    delete data[i.guild.id].ttt[i.message.id];
+                    const r1 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '0').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '1').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '2').setDisabled(true));
+                    const r2 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '3').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '4').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '5').setDisabled(true));
+                    const r3 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '6').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '7').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '8').setDisabled(true));
+                    i.message.edit({ content: `Draw between ${data.d[i.guild.id].ttt[i.message.id].init}\nand ${data.d[i.guild.id].ttt[i.message.id].usr}.`, components: [r1, r2, r3] });
+                    delete data.d[i.guild.id].ttt[i.message.id];
                     return;
                 }
                 if (c != '0') {
@@ -1682,44 +1682,44 @@ client.on('interactionCreate', async i => {
                         case '7': d[0] = false; d[4] = false; d[8] = false; break;
                         case '8': d[2] = false; d[4] = false; d[6] = false; break;
                     }
-                    const r1 = new ActionRowBuilder().addComponents(setttt(data[i.guild.id].ttt[i.message.id].data, '0').setDisabled(d[0]), setttt(data[i.guild.id].ttt[i.message.id].data, '1').setDisabled(d[1]), setttt(data[i.guild.id].ttt[i.message.id].data, '2').setDisabled(d[2]));
-                    const r2 = new ActionRowBuilder().addComponents(setttt(data[i.guild.id].ttt[i.message.id].data, '3').setDisabled(d[3]), setttt(data[i.guild.id].ttt[i.message.id].data, '4').setDisabled(d[4]), setttt(data[i.guild.id].ttt[i.message.id].data, '5').setDisabled(d[5]));
-                    const r3 = new ActionRowBuilder().addComponents(setttt(data[i.guild.id].ttt[i.message.id].data, '6').setDisabled(d[6]), setttt(data[i.guild.id].ttt[i.message.id].data, '7').setDisabled(d[7]), setttt(data[i.guild.id].ttt[i.message.id].data, '8').setDisabled(d[8]));
-                    if (data[i.guild.id].ttt[i.message.id].turn == 0)
-                        i.message.edit({ content: `${data[i.guild.id].ttt[i.message.id].init} won against\n${data[i.guild.id].ttt[i.message.id].usr}.`, components: [r1, r2, r3] });
+                    const r1 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '0').setDisabled(d[0]), setttt(data.d[i.guild.id].ttt[i.message.id].data, '1').setDisabled(d[1]), setttt(data.d[i.guild.id].ttt[i.message.id].data, '2').setDisabled(d[2]));
+                    const r2 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '3').setDisabled(d[3]), setttt(data.d[i.guild.id].ttt[i.message.id].data, '4').setDisabled(d[4]), setttt(data.d[i.guild.id].ttt[i.message.id].data, '5').setDisabled(d[5]));
+                    const r3 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '6').setDisabled(d[6]), setttt(data.d[i.guild.id].ttt[i.message.id].data, '7').setDisabled(d[7]), setttt(data.d[i.guild.id].ttt[i.message.id].data, '8').setDisabled(d[8]));
+                    if (data.d[i.guild.id].ttt[i.message.id].turn == 0)
+                        i.message.edit({ content: `${data.d[i.guild.id].ttt[i.message.id].init} won against\n${data.d[i.guild.id].ttt[i.message.id].usr}.`, components: [r1, r2, r3] });
                     else
-                        i.message.edit({ content: `${data[i.guild.id].ttt[i.message.id].usr} won against\n${data[i.guild.id].ttt[i.message.id].init}.`, components: [r1, r2, r3] });
-                    delete data[i.guild.id].ttt[i.message.id];
+                        i.message.edit({ content: `${data.d[i.guild.id].ttt[i.message.id].usr} won against\n${data.d[i.guild.id].ttt[i.message.id].init}.`, components: [r1, r2, r3] });
+                    delete data.d[i.guild.id].ttt[i.message.id];
                     return;
                 }
-                const r1 = new ActionRowBuilder().addComponents(setttt(data[i.guild.id].ttt[i.message.id].data, '0'), setttt(data[i.guild.id].ttt[i.message.id].data, '1'), setttt(data[i.guild.id].ttt[i.message.id].data, '2'), new ButtonBuilder().setCustomId('a9').setLabel('🏳️').setStyle(ButtonStyle.Danger));
-                const r2 = new ActionRowBuilder().addComponents(setttt(data[i.guild.id].ttt[i.message.id].data, '3'), setttt(data[i.guild.id].ttt[i.message.id].data, '4'), setttt(data[i.guild.id].ttt[i.message.id].data, '5'));
-                const r3 = new ActionRowBuilder().addComponents(setttt(data[i.guild.id].ttt[i.message.id].data, '6'), setttt(data[i.guild.id].ttt[i.message.id].data, '7'), setttt(data[i.guild.id].ttt[i.message.id].data, '8'));
-                data[i.guild.id].ttt[i.message.id].turn = (data[i.guild.id].ttt[i.message.id].turn + 1) % 2;
-                if (!data[i.guild.id].ttt[i.message.id].turn) {
-                    s += `It's ⭕${data[i.guild.id].ttt[i.message.id].init}'s turn.`;
+                const r1 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '0'), setttt(data.d[i.guild.id].ttt[i.message.id].data, '1'), setttt(data.d[i.guild.id].ttt[i.message.id].data, '2'), new ButtonBuilder().setCustomId('a9').setLabel('🏳️').setStyle(ButtonStyle.Danger));
+                const r2 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '3'), setttt(data.d[i.guild.id].ttt[i.message.id].data, '4'), setttt(data.d[i.guild.id].ttt[i.message.id].data, '5'));
+                const r3 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '6'), setttt(data.d[i.guild.id].ttt[i.message.id].data, '7'), setttt(data.d[i.guild.id].ttt[i.message.id].data, '8'));
+                data.d[i.guild.id].ttt[i.message.id].turn = (data.d[i.guild.id].ttt[i.message.id].turn + 1) % 2;
+                if (!data.d[i.guild.id].ttt[i.message.id].turn) {
+                    s += `It's ⭕${data.d[i.guild.id].ttt[i.message.id].init}'s turn.`;
                 }
                 else {
-                    s += `It's ❌${data[i.guild.id].ttt[i.message.id].usr}'s turn.`;
+                    s += `It's ❌${data.d[i.guild.id].ttt[i.message.id].usr}'s turn.`;
                 }
                 i.message.edit({ content: s, components: [r1, r2, r3] });
-                data[i.guild.id].ttt[i.message.id].time = new Date().getTime();
+                data.d[i.guild.id].ttt[i.message.id].time = new Date().getTime();
                 break;
             case 'b':
                 b = Number.parseInt(i.customId.charAt(1).toString());
-                if (data[i.guild.id].con == undefined) return;
-                if (data[i.guild.id].con[i.message.id] == undefined) return;
-                if (i.member.user.id != data[i.guild.id].con[i.message.id].usr.id && i.member.user.id != data[i.guild.id].con[i.message.id].init.id) return;
+                if (data.d[i.guild.id].con == undefined) return;
+                if (data.d[i.guild.id].con[i.message.id] == undefined) return;
+                if (i.member.user.id != data.d[i.guild.id].con[i.message.id].usr.id && i.member.user.id != data.d[i.guild.id].con[i.message.id].init.id) return;
                 if (b == 7) {
-                    if (i.member.user.id == data[i.guild.id].con[i.message.id].usr.id)
-                        s += `The winner is ${data[i.guild.id].con[i.message.id].init},\n${data[i.guild.id].con[i.message.id].usr} resigned.`;
-                    else if (i.member.user.id == data[i.guild.id].con[i.message.id].init.id)
-                        s += `The winner is ${data[i.guild.id].con[i.message.id].usr},\n${data[i.guild.id].con[i.message.id].init} resigned.`;
+                    if (i.member.user.id == data.d[i.guild.id].con[i.message.id].usr.id)
+                        s += `The winner is ${data.d[i.guild.id].con[i.message.id].init},\n${data.d[i.guild.id].con[i.message.id].usr} resigned.`;
+                    else if (i.member.user.id == data.d[i.guild.id].con[i.message.id].init.id)
+                        s += `The winner is ${data.d[i.guild.id].con[i.message.id].usr},\n${data.d[i.guild.id].con[i.message.id].init} resigned.`;
                     s += '\n```\n| 1  2  3  4  5  6  7|';
                     for (let j = 0; j < 42; j++) {
                         if (j % 7 == 0)
                             s += '\n|';
-                        switch (data[i.guild.id].con[i.message.id].data[j]) {
+                        switch (data.d[i.guild.id].con[i.message.id].data.d[j]) {
                             case 0:
                                 s += '  |';
                                 break;
@@ -1733,39 +1733,39 @@ client.on('interactionCreate', async i => {
                     }
                     s += '\n```';
                     i.message.edit({ content: s, components: [] });
-                    delete data[i.guild.id].con[i.message.id];
+                    delete data.d[i.guild.id].con[i.message.id];
                     return;
                 }
-                if (data[i.guild.id].con[i.message.id].turn == 0) {
-                    if (i.member.user.id != data[i.guild.id].con[i.message.id].init.id)
+                if (data.d[i.guild.id].con[i.message.id].turn == 0) {
+                    if (i.member.user.id != data.d[i.guild.id].con[i.message.id].init.id)
                         return;
                 }
                 else {
-                    if (i.member.user.id != data[i.guild.id].con[i.message.id].usr.id)
+                    if (i.member.user.id != data.d[i.guild.id].con[i.message.id].usr.id)
                         return;
                 }
-                if (data[i.guild.id].con[i.message.id].data[b] != 0)
+                if (data.d[i.guild.id].con[i.message.id].data.d[b] != 0)
                     return;
                 for (let it = 0; it < 6; it++) {
                     let d = 35 + b - it * 7;
-                    if (data[i.guild.id].con[i.message.id].data[d] == 0) {
-                        data[i.guild.id].con[i.message.id].data[d] = data[i.guild.id].con[i.message.id].turn + 1;
+                    if (data.d[i.guild.id].con[i.message.id].data.d[d] == 0) {
+                        data.d[i.guild.id].con[i.message.id].data.d[d] = data.d[i.guild.id].con[i.message.id].turn + 1;
                         break;
                     }
                 }
-                c = await checkcon(data[i.guild.id].con[i.message.id].data);
-                data[i.guild.id].con[i.message.id].turn = (data[i.guild.id].con[i.message.id].turn + 1) % 2;
+                c = await checkcon(data.d[i.guild.id].con[i.message.id].data);
+                data.d[i.guild.id].con[i.message.id].turn = (data.d[i.guild.id].con[i.message.id].turn + 1) % 2;
                 switch (c[0]) {
                     case 0:
-                        if (data[i.guild.id].con[i.message.id].turn == 0)
-                            s += `It's ⭕${data[i.guild.id].con[i.message.id].init}'s turn.`;
+                        if (data.d[i.guild.id].con[i.message.id].turn == 0)
+                            s += `It's ⭕${data.d[i.guild.id].con[i.message.id].init}'s turn.`;
                         else
-                            s += `It's ❌${data[i.guild.id].con[i.message.id].usr}'s turn.`;
+                            s += `It's ❌${data.d[i.guild.id].con[i.message.id].usr}'s turn.`;
                         s += '\n```\n| 1  2  3  4  5  6  7|';
                         for (let j = 0; j < 42; j++) {
                             if (j % 7 == 0)
                                 s += '\n|';
-                            switch (data[i.guild.id].con[i.message.id].data[j]) {
+                            switch (data.d[i.guild.id].con[i.message.id].data.d[j]) {
                                 case 0:
                                     s += '  |';
                                     break;
@@ -1781,19 +1781,19 @@ client.on('interactionCreate', async i => {
                         const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('b0').setLabel('1').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b1').setLabel('2').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b2').setLabel('3').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b3').setLabel('4').setStyle(ButtonStyle.Secondary));
                         const r2 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('b4').setLabel('5').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b5').setLabel('6').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b6').setLabel('7').setStyle(ButtonStyle.Secondary), new ButtonBuilder().setCustomId('b7').setLabel('🏳️').setStyle(ButtonStyle.Danger));
                         i.message.edit({ content: s, components: [r1, r2] });
-                        data[i.guild.id].con[i.message.id].time = new Date().getTime();
+                        data.d[i.guild.id].con[i.message.id].time = new Date().getTime();
                         break;
                     case 1:
-                        if (data[i.guild.id].con[i.message.id].turn)
-                            s += `${data[i.guild.id].con[i.message.id].init} won against\n${data[i.guild.id].con[i.message.id].usr}.`;
+                        if (data.d[i.guild.id].con[i.message.id].turn)
+                            s += `${data.d[i.guild.id].con[i.message.id].init} won against\n${data.d[i.guild.id].con[i.message.id].usr}.`;
                         else
-                            s += `${data[i.guild.id].con[i.message.id].usr} won against\n${data[i.guild.id].con[i.message.id].init}.`;
+                            s += `${data.d[i.guild.id].con[i.message.id].usr} won against\n${data.d[i.guild.id].con[i.message.id].init}.`;
                         s += '\n```\n| 1  2  3  4  5  6  7|';
                         for (let j = 0; j < 42; j++) {
                             if (j % 7 == 0)
                                 s += '\n|';
                             if (j == c[1] || j == c[2] || j == c[3] || j == c[4])
-                                switch (data[i.guild.id].con[i.message.id].data[j]) {
+                                switch (data.d[i.guild.id].con[i.message.id].data.d[j]) {
                                     case 1:
                                         s += '⭕|';
                                         break;
@@ -1802,7 +1802,7 @@ client.on('interactionCreate', async i => {
                                         break;
                                 }
                             else
-                                switch (data[i.guild.id].con[i.message.id].data[j]) {
+                                switch (data.d[i.guild.id].con[i.message.id].data.d[j]) {
                                     case 0:
                                         s += '  |';
                                         break;
@@ -1816,15 +1816,15 @@ client.on('interactionCreate', async i => {
                         }
                         s += '\n```';
                         i.message.edit({ content: s, components: [] });
-                        delete data[i.guild.id].con[i.message.id];
+                        delete data.d[i.guild.id].con[i.message.id];
                         break;
                     case 2:
-                        s += `Draw between ${data[i.guild.id].con[i.message.id].init}\nand ${data[i.guild.id].con[i.message.id].usr}.`;
+                        s += `Draw between ${data.d[i.guild.id].con[i.message.id].init}\nand ${data.d[i.guild.id].con[i.message.id].usr}.`;
                         s += '\n```\n| 1  2  3  4  5  6  7|';
                         for (let j = 0; j < 42; j++) {
                             if (j % 7 == 0)
                                 s += '\n|';
-                            switch (data[i.guild.id].con[i.message.id].data[j]) {
+                            switch (data.d[i.guild.id].con[i.message.id].data.d[j]) {
                                 case 0:
                                     s += '  |';
                                     break;
@@ -1838,7 +1838,7 @@ client.on('interactionCreate', async i => {
                         }
                         s += '\n```';
                         i.message.edit({ content: s, components: [] });
-                        delete data[i.guild.id].con[i.message.id];
+                        delete data.d[i.guild.id].con[i.message.id];
                         break;
                 }
                 break;
@@ -1846,51 +1846,51 @@ client.on('interactionCreate', async i => {
                 b = i.customId.toString().replace('da', '').replace('dr', '');
                 b = parseInt(b);
                 if (i.member.user.id != b) return;
-                if (data[i.guild.id].chessusr == undefined || data[i.guild.id].chessusr[i.member.user.id] == undefined) {
+                if (data.d[i.guild.id].chessusr == undefined || data.d[i.guild.id].chessusr[i.member.user.id] == undefined) {
                     i.message.edit({ content: 'This draw offer is deprecated.', components: [] });
                     return;
                 }
                 if (i.customId.charAt(1).toString() == 'a') {
                     i.message.edit({ content: 'The draw offer was accepted.', components: [] });
-                    if (data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].color)
-                        await chessimg(data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].data, [-1, -1, -1, -1], data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].extra, data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].usr.username, data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].init.username, 4, data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].taken, i.message.id, data[i.guild.id].chessusr[i.member.user.id], 1);
+                    if (data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].color)
+                        await chessimg(data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].data, [-1, -1, -1, -1], data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].extra, data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].usr.username, data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].init.username, 4, data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].taken, i.message.id, data.d[i.guild.id].chessusr[i.member.user.id], 1);
                     else
-                        await chessimg(data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].data, [-1, -1, -1, -1], data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].extra, data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].init.username, data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].usr.username, 4, data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].taken, i.message.id, data[i.guild.id].chessusr[i.member.user.id], 1);
-                    let m = await i.message.channel.send({ content: `Draw between ${data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].init}\nand ${data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].usr}.`, files: [`${ddir}${i.message.id}.png`] });
+                        await chessimg(data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].data, [-1, -1, -1, -1], data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].extra, data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].init.username, data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].usr.username, 4, data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].taken, i.message.id, data.d[i.guild.id].chessusr[i.member.user.id], 1);
+                    let m = await i.message.channel.send({ content: `Draw between ${data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].init}\nand ${data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].usr}.`, files: [`${ddir}${i.message.id}.png`] });
                     fs.unlinkSync(`${ddir}${i.message.id}.png`);
-                    chessgif(data[i.guild.id].chessusr[i.member.user.id], m);
+                    chessgif(data.d[i.guild.id].chessusr[i.member.user.id], m);
                     try {
-                        delete data[i.guild.id].message[data[i.guild.id].chessusr[data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].init.id]];
+                        delete data.d[i.guild.id].message[data.d[i.guild.id].chessusr[data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].init.id]];
                     } catch (e) { console.log(e); }
-                    let temp = JSON.parse(JSON.stringify(data[i.guild.id].chessusr[i.member.user.id]));
+                    let temp = JSON.parse(JSON.stringify(data.d[i.guild.id].chessusr[i.member.user.id]));
                     try {
-                        delete data[i.guild.id].chessusr[data[i.guild.id].chess[temp].usr.id];
-                    } catch (e) { console.log(e); }
-                    try {
-                        delete data[i.guild.id].chessusr[data[i.guild.id].chess[temp].init.id];
+                        delete data.d[i.guild.id].chessusr[data.d[i.guild.id].chess[temp].usr.id];
                     } catch (e) { console.log(e); }
                     try {
-                        delete data[i.guild.id].chess[temp];
+                        delete data.d[i.guild.id].chessusr[data.d[i.guild.id].chess[temp].init.id];
                     } catch (e) { console.log(e); }
-                    delete data[i.guild.id].message[i.message.id];
+                    try {
+                        delete data.d[i.guild.id].chess[temp];
+                    } catch (e) { console.log(e); }
+                    delete data.d[i.guild.id].message[i.message.id];
                 }
                 if (i.customId.charAt(1).toString() == 'r') {
                     i.message.edit({ content: 'The draw offer was rejected.', components: [] });
-                    if (data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].init.id == i.member.user.id)
-                        data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].draw[2] = 1;
-                    if (data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].usr.id == i.member.user.id)
-                        data[i.guild.id].chess[data[i.guild.id].chessusr[i.member.user.id]].draw[3] = 1;
+                    if (data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].init.id == i.member.user.id)
+                        data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].draw[2] = 1;
+                    if (data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].usr.id == i.member.user.id)
+                        data.d[i.guild.id].chess[data.d[i.guild.id].chessusr[i.member.user.id]].draw[3] = 1;
                 }
                 break;
             case 'e':
                 b = i.customId.charAt(1).toString();
                 if (b == 'p') {
-                    if (data[i.guild.id].epicusr[i.member.user.id] == undefined) {
-                        data[i.guild.id].epicusr[i.member.user.id] = i.member.user.id.toString();
+                    if (data.d[i.guild.id].epicusr[i.member.user.id] == undefined) {
+                        data.d[i.guild.id].epicusr[i.member.user.id] = i.member.user.id.toString();
                         i.followUp({ content: 'You will now get pinged for free games', ephemeral: true });
                     }
                     else {
-                        delete data[i.guild.id].epicusr[i.member.user.id];
+                        delete data.d[i.guild.id].epicusr[i.member.user.id];
                         i.followUp({ content: 'You will not get pinged for free games', ephemeral: true });
                     }
                 }
@@ -2484,7 +2484,7 @@ async function xkcd() {
                 .setImage(res.feed.entry[0].summary.substring(res.feed.entry[0].summary.indexOf("img src=") + 9, res.feed.entry[0].summary.indexOf(" title=") - 1).replaceAll("&quot;", '"'))
                 .setFooter({ text: `#${id}` })
                 .setTimestamp();
-            for (let guild in data) {
+            for (let guild in data.d) {
                 if (xchan[guild] != undefined)
                     xchan[guild].send({ embeds: [embed] });
             }
@@ -2572,10 +2572,10 @@ async function epic() {
             }
             const k = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ep').setLabel('PING').setStyle(ButtonStyle.Success).setDisabled(false));
             if (c > 0) {
-                for (let guild in data) {
+                for (let guild in data.d) {
                     if (echan[guild] != undefined) {
                         let q = '';
-                        let g = Object.values(data[guild].epicusr);
+                        let g = Object.values(data.d[guild].epicusr);
                         for (let i = 0; i < g.length; i++)
                             q += `<@${g[i]}> `;
                         if (emb.length > 0)
@@ -2657,10 +2657,10 @@ async function steam() {
         }
         const k = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ep').setLabel('PING').setStyle(ButtonStyle.Success).setDisabled(false));
         if (c > 0) {
-            for (let guild in data) {
+            for (let guild in data.d) {
                 if (echan[guild] != undefined) {
                     let q = '';
-                    let g = Object.values(data[guild].epicusr);
+                    let g = Object.values(data.d[guild].epicusr);
                     for (let i = 0; i < g.length; i++)
                         q += `<@${g[i]}> `;
                     if (emb.length > 0)
@@ -2703,50 +2703,50 @@ setTimeout(async function () {
 
 setInterval(async function () {
     let t = new Date().getTime();
-    for (let guild in data) {
-        for (let j in data[guild]) {
+    for (let guild in data.d) {
+        for (let j in data.d[guild]) {
             if (j == 'ttt' || j == 'con' || j == 'chess')
-                for (let i in data[guild][j]) {
+                for (let i in data.d[guild][j]) {
                     let a = 0;
-                    let m = await client.channels.fetch(data[guild][j][i].channel);
+                    let m = await client.channels.fetch(data.d[guild][j][i].channel);
                     m = await m.messages.fetch(i);
                     if (j == 'chess')
-                        a = (data[guild][j][i].turn + data[guild][j][i].color) % 2;
+                        a = (data.d[guild][j][i].turn + data.d[guild][j][i].color) % 2;
                     else
-                        a = data[guild][j][i].turn;
-                    if (data[guild][j][i].time + 600000 < t && data[guild][j][i].time + 660000 > t) {
-                        m.reply(`${a ? data[guild][j][i].usr : data[guild][j][i].init}: Please continue the game!`);
+                        a = data.d[guild][j][i].turn;
+                    if (data.d[guild][j][i].time + 600000 < t && data.d[guild][j][i].time + 660000 > t) {
+                        m.reply(`${a ? data.d[guild][j][i].usr : data.d[guild][j][i].init}: Please continue the game!`);
                     }
-                    if (data[guild][j][i].time + 18000000 < t && data[guild][j][i].time + 1860000 > t) {
-                        m.reply(`${a ? data[guild][j][i].usr : data[guild][j][i].init}: You should continue the game!`);
+                    if (data.d[guild][j][i].time + 18000000 < t && data.d[guild][j][i].time + 1860000 > t) {
+                        m.reply(`${a ? data.d[guild][j][i].usr : data.d[guild][j][i].init}: You should continue the game!`);
                     }
-                    if (data[guild][j][i].time + 3600000 < t && data[guild][j][i].time + 3660000 > t) {
-                        m.reply(`${a ? data[guild][j][i].usr : data[guild][j][i].init}: Will you continue the game?`);
+                    if (data.d[guild][j][i].time + 3600000 < t && data.d[guild][j][i].time + 3660000 > t) {
+                        m.reply(`${a ? data.d[guild][j][i].usr : data.d[guild][j][i].init}: Will you continue the game?`);
                     }
-                    if (data[guild][j][i].time + 7200000 < t) {
-                        m.reply(`${a ? data[guild][j][i].usr : data[guild][j][i].init}: Guess what? You didn't continue the game!`);
+                    if (data.d[guild][j][i].time + 7200000 < t) {
+                        m.reply(`${a ? data.d[guild][j][i].usr : data.d[guild][j][i].init}: Guess what? You didn't continue the game!`);
                         switch (j) {
                             case 'ttt':
-                                const r1 = new ActionRowBuilder().addComponents(setttt(data[guild].ttt[m.id].data, '0').setDisabled(true), setttt(data[guild].ttt[m.id].data, '1').setDisabled(true), setttt(data[guild].ttt[m.id].data, '2').setDisabled(true));
-                                const r2 = new ActionRowBuilder().addComponents(setttt(data[guild].ttt[m.id].data, '3').setDisabled(true), setttt(data[guild].ttt[m.id].data, '4').setDisabled(true), setttt(data[guild].ttt[m.id].data, '5').setDisabled(true));
-                                const r3 = new ActionRowBuilder().addComponents(setttt(data[guild].ttt[m.id].data, '6').setDisabled(true), setttt(data[guild].ttt[m.id].data, '7').setDisabled(true), setttt(data[guild].ttt[m.id].data, '8').setDisabled(true));
-                                if (data[guild].ttt[i].turn)
-                                    m.edit({ content: `The winner is ${data[guild].ttt[m.id].init},\n${data[guild].ttt[m.id].usr} timed out.`, components: [r1, r2, r3] });
-                                if (!data[guild].ttt[i].turn)
-                                    m.edit({ content: `The winner is ${data[guild].ttt[m.id].usr},\n${data[guild].ttt[m.id].init} timed out.`, components: [r1, r2, r3] });
-                                delete data[guild].ttt[m.id];
+                                const r1 = new ActionRowBuilder().addComponents(setttt(data.d[guild].ttt[m.id].data, '0').setDisabled(true), setttt(data.d[guild].ttt[m.id].data, '1').setDisabled(true), setttt(data.d[guild].ttt[m.id].data, '2').setDisabled(true));
+                                const r2 = new ActionRowBuilder().addComponents(setttt(data.d[guild].ttt[m.id].data, '3').setDisabled(true), setttt(data.d[guild].ttt[m.id].data, '4').setDisabled(true), setttt(data.d[guild].ttt[m.id].data, '5').setDisabled(true));
+                                const r3 = new ActionRowBuilder().addComponents(setttt(data.d[guild].ttt[m.id].data, '6').setDisabled(true), setttt(data.d[guild].ttt[m.id].data, '7').setDisabled(true), setttt(data.d[guild].ttt[m.id].data, '8').setDisabled(true));
+                                if (data.d[guild].ttt[i].turn)
+                                    m.edit({ content: `The winner is ${data.d[guild].ttt[m.id].init},\n${data.d[guild].ttt[m.id].usr} timed out.`, components: [r1, r2, r3] });
+                                if (!data.d[guild].ttt[i].turn)
+                                    m.edit({ content: `The winner is ${data.d[guild].ttt[m.id].usr},\n${data.d[guild].ttt[m.id].init} timed out.`, components: [r1, r2, r3] });
+                                delete data.d[guild].ttt[m.id];
                                 break;
                             case 'con':
                                 let s = '';
-                                if (data[guild].con[i].turn)
-                                    s += `The winner is ${data[guild].con[m.id].init},\n${data[guild].con[m.id].usr} timed out.`;
-                                else if (!data[guild].con[i].turn)
-                                    s += `The winner is ${data[guild].con[m.id].usr},\n${data[guild].con[m.id].init} timed out.`;
+                                if (data.d[guild].con[i].turn)
+                                    s += `The winner is ${data.d[guild].con[m.id].init},\n${data.d[guild].con[m.id].usr} timed out.`;
+                                else if (!data.d[guild].con[i].turn)
+                                    s += `The winner is ${data.d[guild].con[m.id].usr},\n${data.d[guild].con[m.id].init} timed out.`;
                                 s += '\n```\n| 1  2  3  4  5  6  7|';
                                 for (let j = 0; j < 42; j++) {
                                     if (j % 7 == 0)
                                         s += '\n|';
-                                    switch (data[guild].con[m.id].data[guild][j]) {
+                                    switch (data.d[guild].con[m.id].data.d[guild][j]) {
                                         case 0:
                                             s += '  |';
                                             break;
@@ -2760,39 +2760,39 @@ setInterval(async function () {
                                 }
                                 s += '\n```';
                                 m.edit({ content: s, components: [] });
-                                delete data[guild].con[m.id];
+                                delete data.d[guild].con[m.id];
                                 break;
                             case 'chess':
                                 if (!a) {
-                                    if (data[guild].chess[i].color)
-                                        await chessimg(data[guild].chess[i].data, [-1, -1, -1, -1], data[guild].chess[i].extra, data[guild].chess[i].usr.username, data[guild].chess[i].init.username, 2, data[guild].chess[i].taken, j, i, 1);
+                                    if (data.d[guild].chess[i].color)
+                                        await chessimg(data.d[guild].chess[i].data, [-1, -1, -1, -1], data.d[guild].chess[i].extra, data.d[guild].chess[i].usr.username, data.d[guild].chess[i].init.username, 2, data.d[guild].chess[i].taken, j, i, 1);
                                     else
-                                        await chessimg(data[guild].chess[i].data, [-1, -1, -1, -1], data[guild].chess[i].extra, data[guild].chess[i].init.username, data[guild].chess[i].usr.username, 3, data[guild].chess[i].taken, j, i, 1);
-                                    let m = await client.channels.cache.get(data[guild][j][i].channel).send({ content: `The winner is ${data[guild].chess[i].usr},\n${data[guild].chess[i].init} timed out.`, files: [`${ddir}${j}.png`] });
+                                        await chessimg(data.d[guild].chess[i].data, [-1, -1, -1, -1], data.d[guild].chess[i].extra, data.d[guild].chess[i].init.username, data.d[guild].chess[i].usr.username, 3, data.d[guild].chess[i].taken, j, i, 1);
+                                    let m = await client.channels.cache.get(data.d[guild][j][i].channel).send({ content: `The winner is ${data.d[guild].chess[i].usr},\n${data.d[guild].chess[i].init} timed out.`, files: [`${ddir}${j}.png`] });
                                     fs.unlinkSync(`${ddir}${j}.png`);
                                     chessgif(i, m);
                                 }
                                 else if (a) {
-                                    if (data[guild].chess[i].color)
-                                        await chessimg(data[guild].chess[i].data, [-1, -1, -1, -1], data[guild].chess[i].extra, data[guild].chess[i].usr.username, data[guild].chess[i].init.username, 3, data[guild].chess[i].taken, j, i, 1);
+                                    if (data.d[guild].chess[i].color)
+                                        await chessimg(data.d[guild].chess[i].data, [-1, -1, -1, -1], data.d[guild].chess[i].extra, data.d[guild].chess[i].usr.username, data.d[guild].chess[i].init.username, 3, data.d[guild].chess[i].taken, j, i, 1);
                                     else
-                                        await chessimg(data[guild].chess[i].data, [-1, -1, -1, -1], data[guild].chess[i].extra, data[guild].chess[i].init.username, data[guild].chess[i].usr.username, 2, data[guild].chess[i].taken, j, i, 1);
-                                    let m = await client.channels.cache.get(data[guild][j][i].channel).send({ content: `The winner is ${data[guild].chess[i].init},\n${data[guild].chess[i].usr} timed out.`, files: [`${ddir}${j}.png`] });
+                                        await chessimg(data.d[guild].chess[i].data, [-1, -1, -1, -1], data.d[guild].chess[i].extra, data.d[guild].chess[i].init.username, data.d[guild].chess[i].usr.username, 2, data.d[guild].chess[i].taken, j, i, 1);
+                                    let m = await client.channels.cache.get(data.d[guild][j][i].channel).send({ content: `The winner is ${data.d[guild].chess[i].init},\n${data.d[guild].chess[i].usr} timed out.`, files: [`${ddir}${j}.png`] });
                                     fs.unlinkSync(`${ddir}${j}.png`);
                                     chessgif(i, m);
                                 }
                                 try {
-                                    delete data[guild].message[data[guild].chessusr[data[guild].chess[i].init.id]];
+                                    delete data.d[guild].message[data.d[guild].chessusr[data.d[guild].chess[i].init.id]];
                                 } catch (e) { console.log(e); }
                                 let temp = JSON.parse(JSON.stringify(i));
                                 try {
-                                    delete data[guild].chessusr[data[guild].chess[temp].usr.id];
+                                    delete data.d[guild].chessusr[data.d[guild].chess[temp].usr.id];
                                 } catch (e) { console.log(e); }
                                 try {
-                                    delete data[guild].chessusr[data[guild].chess[temp].init.id];
+                                    delete data.d[guild].chessusr[data.d[guild].chess[temp].init.id];
                                 } catch (e) { console.log(e); }
                                 try {
-                                    delete data[guild].chess[temp];
+                                    delete data.d[guild].chess[temp];
                                 } catch (e) { console.log(e); }
                                 break;
                         }
