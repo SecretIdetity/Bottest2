@@ -1,7 +1,6 @@
 # Bottest
 
 || newly uploaded as of 19/11/2023 to prevent leaking personal information ||  
-|| this is the latest build as of ~30/04/2023 and will not be worked on    ||
 
 A discord bot some games and useful stuff.     
 Code is ok-ish I'd say.     
