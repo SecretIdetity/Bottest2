@@ -472,6 +472,12 @@ client.on("messageCreate", async message => {
         await save();
         (await msg).edit('saved');
     }
+    else if (command == 'reload') {
+        if(message.author.id != conf.admin)
+            return;
+        message.channel.send('reloading...');
+        die(0);
+    }
     else if (command == 'restart') {
         if (message.author.id != conf.admin)
             return;
