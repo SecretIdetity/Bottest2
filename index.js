@@ -1053,12 +1053,12 @@ client.on("messageCreate", async message => {
         }
         a = a.toLowerCase();
         switch (a) {
-            case 's':
+            case 's': case 'set':
                 message.channel.send(`Set Channel for welcome-messages to ${message.channel}.`);
                 wchan[message.guild.id] = message.channel;
                 data.d[message.guild.id].wel = wchan[message.guild.id].id;
                 break;
-            case 'g':
+            case 'g': case 'get':
                 message.channel.send(`Channel for welcome-messages is ${wchan[message.guild.id]}.`);
                 break;
             default:
@@ -1074,16 +1074,16 @@ client.on("messageCreate", async message => {
         }
         a = a.toLowerCase();
         switch (a) {
-            case 's':
+            case 's': case 'set':
                 message.channel.send(`Set Channel for the latest xkcd to ${message.channel}.`);
                 xchan[message.guild.id] = message.channel;
                 data.d[message.guild.id].xk = xchan[message.guild.id].id;
                 break;
-            case 'g':
+            case 'g': case 'get':
                 message.channel.send(`Channel for the latest xkcd is ${xchan[message.guild.id]}.`);
                 break;
             default:
-                if (parseInt(a) != NaN || a == 'random' || a == 'r') {
+                if (!isNaN(parseInt(a)) || a == 'random' || a == 'r') {
                     let r;
                     let l;
                     if (parseInt(a) > 0) {
@@ -1151,6 +1151,7 @@ client.on("messageCreate", async message => {
                 if (message.author.id != conf.admin)
                     return;
                 egfg.thisshouldneveroccurintheepicgamesapifreegames = 1;
+                message.channel.send("Edited Epic Buffer");
                 break;
             default:
                 message.channel.send(`Please specify a valid command,\n${message.author}.`);
