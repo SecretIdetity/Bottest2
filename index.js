@@ -1151,6 +1151,7 @@ client.on("messageCreate", async message => {
                 if (message.author.id != conf.admin)
                     return;
                 egfg.thisshouldneveroccurintheepicgamesapifreegames = 1;
+                epic();
                 message.channel.send("Edited Epic Buffer");
                 break;
             default:
