@@ -10,7 +10,7 @@ df = 'data.json';
 ef = 'epic.json';
 gf = 'games.json';
 ddir = './data/';
-if (0) { //debug
+if (1) { //debug
     cf = 'configg.json';
     df = 'dataa.json';
     ef = 'epicc.json';
@@ -473,7 +473,7 @@ client.on("messageCreate", async message => {
         (await msg).edit('saved');
     }
     else if (command == 'reload') {
-        if(message.author.id != conf.admin)
+        if (message.author.id != conf.admin)
             return;
         message.channel.send('reloading...');
         die(1000);
@@ -2582,15 +2582,18 @@ async function epic() {
                     let ema = new Date(emc[i + 1]);
                     emb[c].addFields({ name: emc[i], value: `${ema ? new Intl.DateTimeFormat('en-DE', { dateStyle: 'full', timeStyle: 'short' }).format(ema) : 'at some point'}` });
                 }
+                c += 1;
             }
             const k = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ep').setLabel('PING').setStyle(ButtonStyle.Success).setDisabled(false));
             if (c > 0) {
                 for (let guild in data.d) {
                     if (echan[guild] != undefined) {
                         let q = '';
-                        let g = Object.values(data.d[guild].epicusr);
-                        for (let i = 0; i < g.length; i++)
-                            q += `<@${g[i]}> `;
+                        if (c > 1) {
+                            let g = Object.values(data.d[guild].epicusr);
+                            for (let i = 0; i < g.length; i++)
+                                q += `<@${g[i]}> `;
+                        }
                         if (emb.length > 0)
                             if (q == '')
                                 echan[guild].send({ embeds: emb, components: [k] });
