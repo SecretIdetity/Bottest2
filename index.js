@@ -476,7 +476,7 @@ client.on("messageCreate", async message => {
         if(message.author.id != conf.admin)
             return;
         message.channel.send('reloading...');
-        die(0);
+        die(1000);
     }
     else if (command == 'restart') {
         if (message.author.id != conf.admin)
@@ -1129,12 +1129,12 @@ client.on("messageCreate", async message => {
         }
         a = a.toLowerCase();
         switch (a) {
-            case 's':
+            case 's': case 'set':
                 echan[message.guild.id] = message.channel;
                 data.d[message.guild.id].epic = echan[message.guild.id].id;
                 message.channel.send(`Set Channel for free games on EpicGames and Steam to ${message.channel}.`);
                 break;
-            case 'g':
+            case 'g': case 'get':
                 message.channel.send(`Channel for free games on EpicGames and Steam is ${echan[message.guild.id]}.`);
                 break;
             case 'p': case 'ping':
@@ -1146,6 +1146,11 @@ client.on("messageCreate", async message => {
                     delete data.d[message.guild.id].epicusr[message.author.id];
                     message.channel.send(`${message.author} will not get pinged for free games on EpicGames and Steam.`);
                 }
+                break;
+            case 'f': case 'force':
+                if (message.author.id != conf.admin)
+                    return;
+                egfg.thisshouldneveroccurintheepicgamesapifreegames = 1;
                 break;
             default:
                 message.channel.send(`Please specify a valid command,\n${message.author}.`);
