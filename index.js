@@ -436,6 +436,8 @@ client.on("messageCreate", async message => {
         }
         message.channel.send(results["WiFi"] ? results["WiFi"][0] : results["wlan0"] ? results["wlan0"][0] : 'not found rip');
     }
+    else if (command == ':muscle:' || command == '💪')
+        message.channel.send("💪");
     else if (command == 'send') {
         if (message.author.id != conf.admin)
             return;
@@ -1617,7 +1619,7 @@ client.on("messageCreate", async message => {
                     { name: 'Even / Odd', value: `VAL: **ev**/**even**, **od**/**odd**\nCounts the amount of **even**/**odd** number.` },
                     { name: 'Count', value: `VAL: **cs**,**cf**\n**C**ounts **s**uccesses and/or **f**ailures according to the conditions after it.` },
                     { name: 'Subtract / Deduct Failures', value: `VAL: **sf**, **df**\n**D**educt (-1) or **s**ubtract every failed value.` },
-                    { name: 'Output:', value: `normal, **success**, __failure__, ~~discarded~~` }
+                    { name: 'Output:', value: `normal, **success**, __failure__, ~~discarded~~.` }
                 );
             message.channel.send({ embeds: [embed] });
             return;
@@ -1630,7 +1632,7 @@ client.on("messageCreate", async message => {
                 { name: 'TicTacToe', value: `Initiate a game with ${data.d[message.guild.id].prefix}tictactoe/${data.d[message.guild.id].prefix}ttt/${data.d[message.guild.id].prefix}3 followed by pinging the opponent.` },
                 { name: 'Connect 4', value: `Initiate a game with ${data.d[message.guild.id].prefix}connect4/${data.d[message.guild.id].prefix}4win/${data.d[message.guild.id].prefix}4 followed by pinging the opponent.` },
                 { name: 'Chess', value: `Initiate a game with ${data.d[message.guild.id].prefix}chess/${data.d[message.guild.id].prefix}2 followed by pinging the opponent.\nUse ${data.d[message.guild.id].prefix}move/${data.d[message.guild.id].prefix}m [move from] [move to] to move your pieces.\nUse ${data.d[message.guild.id].prefix}resign to resign your game and ${data.d[message.guild.id].prefix}draw/${data.d[message.guild.id].prefix}d to offer a draw.` },
-                { name: 'Roll Dices Old', value: `Use ${data.d[message.guild.id].prefix}rold/${data.d[message.guild.id].prefix}ro ([n times]**d**)[n sides(+[add n])] to roll some dices.` },
+                { name: 'Roll Dices Old', value: `Use ${data.d[message.guild.id].prefix}rold/${data.d[message.guild.id].prefix}ro ([n times]**d**)[n sides(+[add n])] to roll some dices.\nPlease note that not every value will have the same likelyhood of occuring and not all values can be gotten above 4294967295.` },
                 { name: 'Roll Dices Premium', value: `Use ${data.d[message.guild.id].prefix}roll/${data.d[message.guild.id].prefix}r [syntax] to roll some better dices. Use ${data.d[message.guild.id].prefix}help r/roll to find out more` },
                 { name: '8Ball', value: `Use ${data.d[message.guild.id].prefix}8ball/${data.d[message.guild.id].prefix}8 followed by a question to get a response.` },
                 { name: 'Fortune Cookie', value: `Use ${data.d[message.guild.id].prefix}fortune/${data.d[message.guild.id].prefix}f to get a fortune cookie.` },
@@ -1939,7 +1941,9 @@ client.on('interactionCreate', async i => {
 
 function roll(a) {
     let b = a.toString();
-    a = a.replaceAll("-", "+-").replaceAll("*", "+*").replaceAll("/", "+/");
+    if(a.includes(":"))
+        return "do not the dice";
+    a = a.replaceAll("-", ":-").replaceAll("*", ":*").replaceAll("/", ":/").replaceAll("+", ":+");
     let ser = "";
     let it = 1;
     if (a.includes("t")) {
@@ -1947,12 +1951,13 @@ function roll(a) {
         it = parseInt(b[0]);
         a = b[1];
         if (isNaN(it) || it < 1)
-            return "Invalid Number";
+            return "i did not the dice";
     }
-    a = a.split("+");
-    for (let j = 0; j < it; j++) {
+    if(it > 64)
+        return "do not the dice, use the old roll";
+    a = a.split(":");
+    for (let j = 0; j < it; j++)
         ser += rull(a);
-    }
     return `[${b.replaceAll("*", "\\*")}]\n${ser}`;
 }
 
@@ -1961,13 +1966,9 @@ function rull(a) {
     let rs = 0;
     for (let jk = 0; jk < a.length; jk++) {
         op = '+';
-        let c = [];
-        if (a[jk][0] == '-' || a[jk][0] == '*' || a[jk][0] == '/') {
-            op = a[jk][0];
-            c = [...a[jk].substring(1).replaceAll("ev", "ev1").replaceAll("even", "ev1").replaceAll("od", "od1").replaceAll("odd", "od1").matchAll(/[a-z,=,<,>]+\d+/g)]; //not elegant but whatever
-        }
-        else
-            c = [...a[jk].replaceAll("ev", "ev1").replaceAll("even", "ev1").replaceAll("od", "od1").replaceAll("odd", "od1").matchAll(/[a-z,=,<,>]+\d+/g)]; //not elegant but whatever
+        let c;
+                    op = a[jk][0];
+        c = [...a[jk].substring(1).replaceAll("ev", "ev1").replaceAll("even", "ev1").replaceAll("od", "od1").replaceAll("odd", "od1").matchAll(/[a-z,=,<,>]+\d+/g)]; //not elegant but whatever
         let b = 0;
         let amt = 0;
         let sid = 1;
@@ -1988,6 +1989,8 @@ function rull(a) {
             ev = '==';
             let d = c[k][0].match(/[a-z,=,<,>]+/g)[0];
             let e = parseInt(c[k][0].match(/\d+/g)[0]);
+            if(e > 4294967295)
+                e = 4294967295;
             if (d.startsWith('i')) {
                 ii = 1000;
                 d = d.substring(1);
@@ -2164,6 +2167,8 @@ function rull(a) {
                     break;
             }
         }
+        if(res.length == 0)
+            str += 0;
         str += `] `;
         str = str.replace(", ]", "]");
         rs = eval(rs + op + rss);
