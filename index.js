@@ -1963,7 +1963,7 @@ function rull(a) {
             let d = c[k][0].match(/[a-z,=,<,>]+/g)[0];
             let e = parseInt(c[k][0].match(/\d+/g)[0]);
             if (d.startsWith('i')) {
-                ii = 10;
+                ii = 100;
                 d = d.substring(1);
             }
             if (!d.startsWith("d") && !d.startsWith("k")) {
@@ -1991,9 +1991,10 @@ function rull(a) {
                         res.push(random(sid) + 1);
                     break;
                 case 'e':
+                    let i = 0;
                     for (let j = 0; j < ii; j++) {
                         b = 0;
-                        for (let i in res)
+                        for (; i < res.length; i++)
                             if (eval(res[i] + ev + e)) {
                                 b++;
                             }
