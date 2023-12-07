@@ -961,7 +961,7 @@ client.on("messageCreate", async message => {
             data.d[message.guild.id].message[msg.id] = msg;
         }
     }
-    else if (command == 'r' || command == 'roll') {
+    else if (command == 'ro' || command == 'rold') {
         let a = '1d2';
         let nice = '';
         let e = '';
@@ -1044,6 +1044,9 @@ client.on("messageCreate", async message => {
             else
                 message.channel.send(`I rolled a ${b[1]} sided ${nice}ice ${b[0]} times ${e}and got\n${s2}\n-----\n**${r}**.`);
         }
+    }
+    else if (command == 'r' || command == 'roll') {
+        message.channel.send(roll(args.join("")));
     }
     else if (command == 'w' || command == 'welcome') {
         let a = args.shift();
@@ -1911,6 +1914,247 @@ client.on('interactionCreate', async i => {
         }
     }
 });
+
+function roll(a) {
+    let b = a.toString();
+    a = a.replaceAll("-", "+-").replaceAll("*", "+*").replaceAll("/", "+/");
+    let ser = "";
+    let it = 1;
+    if (a.includes("t")) {
+        let b = a.split("t");
+        it = parseInt(b[1]);
+        a = b[2];
+        if (isNaN(it) || it < 1)
+            return "Invalid Number";
+    }
+    a = a.split("+");
+    for (let j = 0; j < it; j++) {
+        ser += rull(a);
+    }
+    return `[${b}]\n${ser}`;
+}
+
+function rull(a) {
+    let str = "";
+    let rs = 0;
+    for (let jk = 0; jk < a.length; jk++) {
+        op = '+';
+        if (a[jk][0] == '-' || a[jk][0] == '*' || a[jk][0] == '/')
+            op = a[0];
+        let b = 0;
+        let c = [...a[jk].replaceAll("ev", "ev1").replaceAll("even", "ev1").replaceAll("od", "od1").replaceAll("odd", "od1").matchAll(/[a-z,=,<,>]+\d+/g)]; //not elegant but whatever
+        let amt = 0;
+        let sid = 1;
+        let ii = 1;
+        let cs = false;
+        let cf = false;
+        let df = false;
+        let sf = false;
+        amt = a[jk].match(/^\d+/g);
+        if (c.length == 0) {
+            str += `[${amt}]`;
+            rs = eval(rs + op + amt);
+            continue;
+        }
+        let res = [];
+        let sta = []; //-2 drop -1 fail 0 1 succ
+        for (let k = 0; k < c.length; k++) {
+            ev = '==';
+            let d = c[k][0].match(/[a-z,=,<,>]+/g)[0];
+            let e = parseInt(c[k][0].match(/\d+/g)[0]);
+            if (d.startsWith('i')) {
+                ii = 10;
+                d = d.substring(1);
+            }
+            if (!d.startsWith("d") && !d.startsWith("k")) {
+                if (d.endsWith("he") || d.endsWith(">=")) {
+                    ev = ">=";
+                    d = d.substring(0, d.length - 2);
+                }
+                if (d.endsWith("le") || d.endsWith("<=")) {
+                    ev = "<=";
+                    d = d.substring(0, d.length - 2);
+                }
+                if (d.endsWith("h") || d.endsWith(">")) {
+                    ev = ">";
+                    d = d.substring(0, d.length - 1);
+                }
+                if (d.endsWith("l") || d.endsWith("<")) {
+                    ev = "<";
+                    d = d.substring(0, d.length - 1);
+                }
+            }
+            switch (d) {
+                case 'd':
+                    sid = e;
+                    for (let i = 0; i < amt; i++)
+                        res.push(random(sid) + 1);
+                    break;
+                case 'e':
+                    for (let j = 0; j < ii; j++) {
+                        b = 0;
+                        for (let i in res)
+                            if (eval(res[i] + ev + e)) {
+                                b++;
+                            }
+                        for (let i = 0; i < b; i++) {
+                            res.push(random(sid) + 1);
+                            sta.push(0);
+                        }
+                    }
+                    break;
+                case 'k': case 'kh':
+                    e = res.length - e;
+                case 'd': case 'dl':
+                    if (e > res.length)
+                        e = res.length;
+                    for (let i = 0; i < e; i++) {
+                        sta[find(1, res)] = -2;
+                    }
+                    break;
+                case 'kl':
+                    e = res.length - e;
+                case 'dh':
+                    if (e > res.length)
+                        e = res.length;
+                    for (let i = 0; i < e; i++) {
+                        sta[find(0, res)] = -2;
+                    }
+                    break;
+                case 'r':
+                    for (let j = 0; j < ii; j++) {
+                        for (let i = 0; i < res.length; i++)
+                            if (eval(res[i] + ev + e))
+                                res[i] = random(sid);
+                    }
+                    break;
+                case 'min':
+                    for (let i = 0; i < res.length; i++)
+                        if (res[i] <= e)
+                            res[i] = e;
+                    break;
+                case 'max':
+                    for (let i = 0; i < res.length; i++)
+                        if (res[i] >= e)
+                            res[i] = e;
+                    break;
+                case 'cs':
+                    cs = true;
+                    for (let i = 0; i < res.length; i++)
+                        if (sta[i] != -2) {
+                            if (eval(res[i] + ev + e))
+                                sta[i] = 1;
+                        }
+                    break;
+                case 'ev':
+                    cs = true;
+                    for (let i = 0; i < res.length; i++)
+                        if (sta[i] != -2) {
+                            if (res[i] % 2)
+                                sta[i] = 1;
+                        }
+                    break;
+                case 'od':
+                    cs = true;
+                    for (let i = 0; i < res.length; i++)
+                        if (sta[i] != -2) {
+                            if (!res[i] % 2)
+                                sta[i] = 1;
+                        }
+                    break;
+                case 'cf':
+                    cf = true;
+                    df = false;
+                    sf = false;
+                    for (let i = 0; i < res.length; i++)
+                        if (sta[i] != -2) {
+                            if (eval(res[i] + ev + e))
+                                sta[i] = -1;
+                        }
+                    break;
+                case 'sf':
+                    sf = true;
+                    df = false;
+                    cf = false;
+                    for (let i = 0; i < res.length; i++)
+                        if (sta[i] != -2) {
+                            if (eval(res[i] + ev + e))
+                                sta[i] = -1;
+                        }
+                    break;
+                case 'df':
+                    df = true;
+                    sf = false;
+                    cf = false;
+                    for (let i = 0; i < res.length; i++)
+                        if (sta[i] != -2) {
+                            if (eval(res[i] + ev + e))
+                                sta[i] = -1;
+                        }
+                    break;
+                default:
+                    break;
+            }
+        }
+        jk == 0 ? str += `[` : str += `${op} [`;
+        let rss = 0;
+        for (let i = 0; i < res.length; i++) {
+            switch (sta[i]) {
+                case -2:
+                    str += `~~${res[i]}~~, `;
+                    break;
+                case -1:
+                    str += `__${res[i]}__, `;
+                    if (cf)
+                        rss++;
+                    if (sf)
+                        rss -= res[i];
+                    if (df)
+                        rss--;
+                    break;
+                case 1:
+                    str += `**${res[i]}**, `;
+                    if (cs)
+                        rss++;
+                    else
+                        rss += res[i];
+                    break;
+                default:
+                    str += `${res[i]}, `;
+                    if (!cs && !cf)
+                        rss += res[i];
+                    break;
+            }
+        }
+        str += `] `;
+        str = str.replace(", ]", "]");
+        rs = eval(rs + op + rss);
+    }
+    return str + `= ${rs}\n`;
+}
+
+function find(a, b) {
+    let c = -1;
+    let d = 0;
+    if (a) {
+        d = Infinity;
+        for (let i = 0; i < b.length; b++) {
+            if (b[i] > 0 && b[i] < d) {
+                c = i;
+                d = b[i];
+            }
+        }
+    }
+    else {
+        for (let i = 0; i < b.length; b++) {
+            if (b[i] > d) {
+                c = i;
+                d = b[i];
+            }
+        }
+    }
+    return c;
+}
 
 function checkmate(a, b, f) {
     let d, e = 0;
@@ -2824,7 +3068,7 @@ function sleep(ms) {
 
 function random(a) {
     if (rnd.length == 0) {
-        let b = aes.aes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0, 0, 0, 0, data.ctr ^ 0xff000000, data.ctr ^ 0xff0000, data.ctr ^ 0xff00, data.ctr ^ 0xff]);
+        let b = aes.aes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0, 0, 0, 0, data.ctr & 0xff000000, data.ctr & 0xff0000, data.ctr & 0xff00, data.ctr & 0xff]);
         data.ctr++;
         while (b.length > 0) {
             rnd.push(b.pop() * 0x01000000 + b.pop() * 0x00010000 + b.pop() * 0x00000100 + b.pop() * 0x00000001);
