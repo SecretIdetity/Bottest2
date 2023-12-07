@@ -1601,6 +1601,27 @@ client.on("messageCreate", async message => {
             message.channel.send(`i forgor 💀,\n${message.author}.`);
             return;
         }
+        if (args[0] == 'r' || args[0] == 'roll') {
+            const embed = new EmbedBuilder()
+                .setColor('#1a57f0')
+                .setTitle('Rolling Dice:')
+                .addFields(
+                    { name: 'General', value: `The features are mostly from [Dice Maiden](<https://github.com/Humblemonk/DiceMaiden>) and [Foundry](<https://foundryvtt.com/article/dice-modifiers/>), it processes from left to right (case and space insensitive).` },
+                    { name: 'Basic Syntax', value: `x **t** y **d** z processes the entire thing x times.\nUse any modifiers after that.` },
+                    { name: 'Advanced Syntax', value: `The explode, reroll and success/failure modifiers all support adding he/>=, h/>, le/<=, l/< (nothing is ==) and a number after them.` },
+                    { name: 'Infinite', value: `VAL: **i**xx\nAdding i before explode or reroll makes it iterate **i**nfinitely-ish.` },
+                    { name: 'Explode', value: `VAL: **e**\nIf the conditions after **e** are met, another roll is made.` },
+                    { name: 'Reroll', value: `VAL: **r**\nIf the conditions after **r** are met, the throw is re**r**olled.` },
+                    { name: 'Keep / Drop', value: `VAL: **k**/**kh**, **kl**, **dl**, **dh**\n**D**rops or **k**eeps the **h**ighest or **l**owest throws.` },
+                    { name: 'Min / Max', value: `VAL: **min**,**max**\nMakes every throw either higher than the **min**inimum or/and lower than the **max**imum.` },
+                    { name: 'Even / Odd', value: `VAL: **ev**/**even**, **od**/**odd**\nCounts the amount of **even**/**odd** number.` },
+                    { name: 'Count', value: `VAL: **cs**,**cf**\n**C**ounts **s**uccesses and/or **f**ailures according to the conditions after it.` },
+                    { name: 'Subtract / Deduct Failures', value: `VAL: **sf**, **df**\n**D**educt (-1) or **s**ubtract every failed value.` },
+                    { name: 'Output:', value: `normal, **success**, __failure__, ~~discarded~~` }
+                );
+            message.channel.send({ embeds: [embed] });
+            return;
+        }
         const embed = new EmbedBuilder()
             .setColor('#1a57f0')
             .setTitle('Currently aviable commands:\n[] = required, () = optional')
@@ -1609,7 +1630,8 @@ client.on("messageCreate", async message => {
                 { name: 'TicTacToe', value: `Initiate a game with ${data.d[message.guild.id].prefix}tictactoe/${data.d[message.guild.id].prefix}ttt/${data.d[message.guild.id].prefix}3 followed by pinging the opponent.` },
                 { name: 'Connect 4', value: `Initiate a game with ${data.d[message.guild.id].prefix}connect4/${data.d[message.guild.id].prefix}4win/${data.d[message.guild.id].prefix}4 followed by pinging the opponent.` },
                 { name: 'Chess', value: `Initiate a game with ${data.d[message.guild.id].prefix}chess/${data.d[message.guild.id].prefix}2 followed by pinging the opponent.\nUse ${data.d[message.guild.id].prefix}move/${data.d[message.guild.id].prefix}m [move from] [move to] to move your pieces.\nUse ${data.d[message.guild.id].prefix}resign to resign your game and ${data.d[message.guild.id].prefix}draw/${data.d[message.guild.id].prefix}d to offer a draw.` },
-                { name: 'Roll Dices', value: `Use ${data.d[message.guild.id].prefix}roll/${data.d[message.guild.id].prefix}r ([n times]**d**)[n sides(+[add n])] to roll some dices.` },
+                { name: 'Roll Dices Old', value: `Use ${data.d[message.guild.id].prefix}rold/${data.d[message.guild.id].prefix}ro ([n times]**d**)[n sides(+[add n])] to roll some dices.` },
+                { name: 'Roll Dices Premium', value: `Use ${data.d[message.guild.id].prefix}roll/${data.d[message.guild.id].prefix}r [syntax] to roll some better dices. Use ${data.d[message.guild.id].prefix}help r/roll to find out more` },
                 { name: '8Ball', value: `Use ${data.d[message.guild.id].prefix}8ball/${data.d[message.guild.id].prefix}8 followed by a question to get a response.` },
                 { name: 'Fortune Cookie', value: `Use ${data.d[message.guild.id].prefix}fortune/${data.d[message.guild.id].prefix}f to get a fortune cookie.` },
                 { name: 'MineSweeper', value: `Use ${data.d[message.guild.id].prefix}minesweeper/${data.d[message.guild.id].prefix}mine [width] [height] [amount of mines] to start a game.` },
@@ -1922,8 +1944,8 @@ function roll(a) {
     let it = 1;
     if (a.includes("t")) {
         let b = a.split("t");
-        it = parseInt(b[1]);
-        a = b[2];
+        it = parseInt(b[0]);
+        a = b[1];
         if (isNaN(it) || it < 1)
             return "Invalid Number";
     }
@@ -1931,7 +1953,7 @@ function roll(a) {
     for (let j = 0; j < it; j++) {
         ser += rull(a);
     }
-    return `[${b}]\n${ser}`;
+    return `[${b.replaceAll("*", "\\*")}]\n${ser}`;
 }
 
 function rull(a) {
@@ -1939,10 +1961,14 @@ function rull(a) {
     let rs = 0;
     for (let jk = 0; jk < a.length; jk++) {
         op = '+';
-        if (a[jk][0] == '-' || a[jk][0] == '*' || a[jk][0] == '/')
-            op = a[0];
+        let c = [];
+        if (a[jk][0] == '-' || a[jk][0] == '*' || a[jk][0] == '/') {
+            op = a[jk][0];
+            c = [...a[jk].substring(1).replaceAll("ev", "ev1").replaceAll("even", "ev1").replaceAll("od", "od1").replaceAll("odd", "od1").matchAll(/[a-z,=,<,>]+\d+/g)]; //not elegant but whatever
+        }
+        else
+            c = [...a[jk].replaceAll("ev", "ev1").replaceAll("even", "ev1").replaceAll("od", "od1").replaceAll("odd", "od1").matchAll(/[a-z,=,<,>]+\d+/g)]; //not elegant but whatever
         let b = 0;
-        let c = [...a[jk].replaceAll("ev", "ev1").replaceAll("even", "ev1").replaceAll("od", "od1").replaceAll("odd", "od1").matchAll(/[a-z,=,<,>]+\d+/g)]; //not elegant but whatever
         let amt = 0;
         let sid = 1;
         let ii = 1;
@@ -1952,7 +1978,7 @@ function rull(a) {
         let sf = false;
         amt = a[jk].match(/^\d+/g);
         if (c.length == 0) {
-            str += `[${amt}]`;
+            jk == 0 ? str += `[${amt}] ` : str += `${op == "*" ? "\\*" : op} [${amt}] `;
             rs = eval(rs + op + amt);
             continue;
         }
@@ -1963,10 +1989,10 @@ function rull(a) {
             let d = c[k][0].match(/[a-z,=,<,>]+/g)[0];
             let e = parseInt(c[k][0].match(/\d+/g)[0]);
             if (d.startsWith('i')) {
-                ii = 100;
+                ii = 1000;
                 d = d.substring(1);
             }
-            if (!d.startsWith("d") && !d.startsWith("k")) {
+            if (!d.startsWith("dl") && !d.startsWith("dh") && !d.startsWith("k")) {
                 if (d.endsWith("he") || d.endsWith(">=")) {
                     ev = ">=";
                     d = d.substring(0, d.length - 2);
@@ -1987,13 +2013,17 @@ function rull(a) {
             switch (d) {
                 case 'd':
                     sid = e;
-                    for (let i = 0; i < amt; i++)
+                    for (let i = 0; i < amt; i++) {
                         res.push(random(sid) + 1);
+                        sta.push(0);
+                    }
                     break;
                 case 'e':
                     let i = 0;
                     for (let j = 0; j < ii; j++) {
                         b = 0;
+                        if (i == res.length)
+                            continue;
                         for (; i < res.length; i++)
                             if (eval(res[i] + ev + e)) {
                                 b++;
@@ -2006,11 +2036,11 @@ function rull(a) {
                     break;
                 case 'k': case 'kh':
                     e = res.length - e;
-                case 'd': case 'dl':
+                case 'dl':
                     if (e > res.length)
                         e = res.length;
                     for (let i = 0; i < e; i++) {
-                        sta[find(1, res)] = -2;
+                        sta[find(1, res, sta)] = -2;
                     }
                     break;
                 case 'kl':
@@ -2019,25 +2049,32 @@ function rull(a) {
                     if (e > res.length)
                         e = res.length;
                     for (let i = 0; i < e; i++) {
-                        sta[find(0, res)] = -2;
+                        sta[find(0, res, sta)] = -2;
                     }
                     break;
                 case 'r':
                     for (let j = 0; j < ii; j++) {
+                        b = 0;
                         for (let i = 0; i < res.length; i++)
-                            if (eval(res[i] + ev + e))
+                            if (eval(res[i] + ev + e)) {
                                 res[i] = random(sid);
+                                b++;
+                            }
+                        if (b == 0)
+                            continue;
                     }
                     break;
                 case 'min':
-                    for (let i = 0; i < res.length; i++)
-                        if (res[i] <= e)
-                            res[i] = e;
+                    if (e <= sid)
+                        for (let i = 0; i < res.length; i++)
+                            if (res[i] <= e)
+                                res[i] = e;
                     break;
                 case 'max':
-                    for (let i = 0; i < res.length; i++)
-                        if (res[i] >= e)
-                            res[i] = e;
+                    if (e > 0)
+                        for (let i = 0; i < res.length; i++)
+                            if (res[i] >= e)
+                                res[i] = e;
                     break;
                 case 'cs':
                     cs = true;
@@ -2097,7 +2134,7 @@ function rull(a) {
                     break;
             }
         }
-        jk == 0 ? str += `[` : str += `${op} [`;
+        jk == 0 ? str += `[` : str += `${op == "*" ? "\\*" : op} [`;
         let rss = 0;
         for (let i = 0; i < res.length; i++) {
             switch (sta[i]) {
@@ -2134,21 +2171,21 @@ function rull(a) {
     return str + `= ${rs}\n`;
 }
 
-function find(a, b) {
-    let c = -1;
+function find(a, b, sta) {
+    let c = 0;
     let d = 0;
     if (a) {
         d = Infinity;
-        for (let i = 0; i < b.length; b++) {
-            if (b[i] > 0 && b[i] < d) {
+        for (let i = 0; i < b.length; i++) {
+            if (sta[i] != -2 && b[i] < d) {
                 c = i;
                 d = b[i];
             }
         }
     }
     else {
-        for (let i = 0; i < b.length; b++) {
-            if (b[i] > d) {
+        for (let i = 0; i < b.length; i++) {
+            if (sta[i] != -2 && b[i] > d) {
                 c = i;
                 d = b[i];
             }
