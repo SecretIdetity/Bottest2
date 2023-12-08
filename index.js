@@ -1941,7 +1941,7 @@ client.on('interactionCreate', async i => {
 
 function roll(a) {
     let b = a.toString();
-    if(a.includes(":"))
+    if (a.includes(":"))
         return "do not the dice";
     a = a.replaceAll("-", ":-").replaceAll("*", ":*").replaceAll("/", ":/").replaceAll("+", ":+");
     let ser = "";
@@ -1953,8 +1953,9 @@ function roll(a) {
         if (isNaN(it) || it < 1)
             return "i did not the dice";
     }
-    if(it > 64)
+    if (it > 64)
         return "do not the dice, use the old roll";
+    a = "+" + a;
     a = a.split(":");
     for (let j = 0; j < it; j++)
         ser += rull(a);
@@ -1965,10 +1966,9 @@ function rull(a) {
     let str = "";
     let rs = 0;
     for (let jk = 0; jk < a.length; jk++) {
-        op = '+';
-        let c;
-                    op = a[jk][0];
-        c = [...a[jk].substring(1).replaceAll("ev", "ev1").replaceAll("even", "ev1").replaceAll("od", "od1").replaceAll("odd", "od1").matchAll(/[a-z,=,<,>]+\d+/g)]; //not elegant but whatever
+        let op = '+';
+        op = a[jk][0];
+        let c = [...a[jk].substring(1).replaceAll("ev", "ev1").replaceAll("even", "ev1").replaceAll("od", "od1").replaceAll("odd", "od1").matchAll(/[a-z=<>]+\d+/g)]; //not elegant but whatever
         let b = 0;
         let amt = 0;
         let sid = 1;
@@ -1977,7 +1977,7 @@ function rull(a) {
         let cf = false;
         let df = false;
         let sf = false;
-        amt = a[jk].match(/^\d+/g);
+        amt = a[jk].match(/^[+\-*\/]\d+/g)[0].substring(1);
         if (c.length == 0) {
             jk == 0 ? str += `[${amt}] ` : str += `${op == "*" ? "\\*" : op} [${amt}] `;
             rs = eval(rs + op + amt);
@@ -1987,9 +1987,9 @@ function rull(a) {
         let sta = []; //-2 drop -1 fail 0 1 succ
         for (let k = 0; k < c.length; k++) {
             ev = '==';
-            let d = c[k][0].match(/[a-z,=,<,>]+/g)[0];
+            let d = c[k][0].match(/[a-z=<>]+/g)[0];
             let e = parseInt(c[k][0].match(/\d+/g)[0]);
-            if(e > 4294967295)
+            if (e > 4294967295)
                 e = 4294967295;
             if (d.startsWith('i')) {
                 ii = 1000;
@@ -2167,7 +2167,7 @@ function rull(a) {
                     break;
             }
         }
-        if(res.length == 0)
+        if (res.length == 0)
             str += 0;
         str += `] `;
         str = str.replace(", ]", "]");
