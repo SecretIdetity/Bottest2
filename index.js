@@ -1974,7 +1974,7 @@ function rull(a) {
         let sid = 1;
         let ii = 1;
         let cs = false;
-        let cf = false;
+        let cff = false;
         let df = false;
         let sf = false;
         amt = a[jk].match(/^[+\-*\/]\d+/g)[0].substring(1);
@@ -2104,7 +2104,7 @@ function rull(a) {
                         }
                     break;
                 case 'cf':
-                    cf = true;
+                    cff = true;
                     df = false;
                     sf = false;
                     for (let i = 0; i < res.length; i++)
@@ -2116,7 +2116,7 @@ function rull(a) {
                 case 'sf':
                     sf = true;
                     df = false;
-                    cf = false;
+                    cff = false;
                     for (let i = 0; i < res.length; i++)
                         if (sta[i] != -2) {
                             if (eval(res[i] + ev + e))
@@ -2126,7 +2126,7 @@ function rull(a) {
                 case 'df':
                     df = true;
                     sf = false;
-                    cf = false;
+                    cff = false;
                     for (let i = 0; i < res.length; i++)
                         if (sta[i] != -2) {
                             if (eval(res[i] + ev + e))
@@ -2146,7 +2146,7 @@ function rull(a) {
                     break;
                 case -1:
                     str += `__${res[i]}__, `;
-                    if (cf)
+                    if (cff)
                         rss++;
                     if (sf)
                         rss -= res[i];
@@ -2162,7 +2162,7 @@ function rull(a) {
                     break;
                 default:
                     str += `${res[i]}, `;
-                    if (!cs && !cf)
+                    if (!cs && !cff)
                         rss += res[i];
                     break;
             }
@@ -3167,15 +3167,9 @@ setInterval(async function () {
 
 async function save() {
     data.save = new Date().toDateString();
-    fs.writeFileSync(cf, JSON.stringify(conf, null, 2), function writeJSON(err) {
-        if (err) return console.log(err);
-    });
     fs.writeFileSync(df, JSON.stringify(data, null, 2), function writeJSON(err) {
         if (err) return console.log(err);
     });
-    //fs.writeFileSync(ef, JSON.stringify(egfg, null, 2), function writeJSON(err) {
-    //    if (err) return console.log(err);
-    //});
     fs.writeFileSync(gf, JSON.stringify(games, null, 2), function writeJSON(err) {
         if (err) return console.log(err);
     });
