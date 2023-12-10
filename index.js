@@ -26,7 +26,8 @@ conf = require(cf);
 data = require(df);
 egfg = require(ef);
 games = require(gf);
-const aes = require('./aes');
+const random = require('./modules/random');
+const dice = require('./modules/dice');
 registerFont('NotoSans-Black.ttf', { family: 'Noto Sans' })
 const gifencoder = require('gifencoder');
 const { ButtonStyle } = require('discord-api-types/v10');
@@ -47,7 +48,6 @@ const client = new Client({
 var c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18;
 var log = fs.createWriteStream(ddir + 'logs.txt', { flags: 'a' });
 let d = new Date();
-var rnd = [];
 
 while (d.getHours() > 23 || d.getHours() < 7) {
     die(300000);
@@ -258,7 +258,7 @@ client.on("messageCreate", async message => {
         if (data.d[message.guild.id].ttt == undefined)
             data.d[message.guild.id].ttt = {};
         let init = message.author;
-        let turn = random(2);
+        let turn = random.random(2);
         let user = args.shift();
         if (user == undefined) {
             message.channel.send(`Please add a valid user using @ or the users id,\n${init}.`);
@@ -333,7 +333,7 @@ client.on("messageCreate", async message => {
         const r1 = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('fa').setLabel('1').setStyle(ButtonStyle.Secondary));
         let sent = await message.channel.send({ content: "Use the Button to see your Deck.\nIt's only valid for 15 Minutes (per Discord).", components: [r1] });
         data.uno[sent.id] = {};
-        data.uno[sent.id].turn = random(user.length);
+        data.uno[sent.id].turn = random.random(user.length);
         data.d[message.guild.id].ttt[sent.id].channel = sent.channel.id;
         data.d[message.guild.id].ttt[sent.id].data = new Array(9).fill(0);
         data.d[message.guild.id].ttt[sent.id].user = user;
@@ -362,7 +362,7 @@ client.on("messageCreate", async message => {
         if (data.d[message.guild.id].con == undefined)
             data.d[message.guild.id].con = {};
         let init = message.author;
-        let turn = random(2);
+        let turn = random.random(2);
         let user = args.shift();
         if (user == undefined) {
             message.channel.send(`Please add a valid user using @ or the users id,\n${init}.`);
@@ -492,21 +492,22 @@ client.on("messageCreate", async message => {
             return;
         let cmd = args.shift();
         if (cmd == 'get') {
-            message.channel.send(data.ctr + ' ' + rnd.length);
+            data.ctr = random.get();
+            message.channel.send(data.ctr + ' ' + random.length());
         } else if (cmd == 'set') {
             let r1 = parseInt(args.shift());
             let r2 = parseInt(args.shift());
             if (r1 >= 0 && r2 == 0) {
                 data.ctr = r1;
-                rnd = [];
-                message.channel.send(data.ctr + ' ' + rnd.length);
+                random.reset(data.ctr);
+                message.channel.send(random.get() + ' ' + random.length());
             } else if (r1 >= 0 && r2 >= 0 && r2 < 4) {
                 data.ctr = r1 - 1;
-                rnd = [];
-                while (r2 != rng.length) {
-                    random(1);
+                random.reset(data.ctr);
+                while (r2 != random.length()) {
+                    random.random(1);
                 }
-                message.channel.send(data.ctr + ' ' + rnd.length);
+                message.channel.send(random.get() + ' ' + random.length());
             } else {
                 message.channel.send('invalid number');
             }
@@ -520,7 +521,7 @@ client.on("messageCreate", async message => {
         if (data.d[message.guild.id].message == undefined)
             data.d[message.guild.id].message = {};
         let init = message.author;
-        let color = random(2);
+        let color = random.random(2);
         let user = args.shift();
         let dat = [10, 8, 9, 11, 12, 9, 8, 10, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 4, 2, 3, 5, 6, 3, 2, 4];
         if (user == undefined) {
@@ -569,7 +570,7 @@ client.on("messageCreate", async message => {
         }
         let g = new Array(64).fill(0);
         let h = new Array(12).fill(0);
-        let n = '0001000' + random(100000);
+        let n = '0001000' + random.random(100000);
         fs.mkdirSync(`${ddir}${n}`);
         if (color)
             await chessimg(dat, [-1, -1, -1, -1], g, usr.username, init.username, 0, h, n, n, 0);
@@ -1025,7 +1026,7 @@ client.on("messageCreate", async message => {
         if (b[0] > 100) {
             let r = 0;
             for (let i = 0; i < b[0]; i++) {
-                r += random(b[1]) + b[2];
+                r += random.random(b[1]) + b[2];
             }
             message.channel.send(`I rolled a ${b[1]} sided ${nice}ice ${b[0]} times ${e}and got\n**${r}**.`);
         }
@@ -1033,7 +1034,7 @@ client.on("messageCreate", async message => {
             let r = 0;
             let s = [];
             for (let i = 0; i < b[0]; i++) {
-                s.push(random(b[1]) + b[2]);
+                s.push(random.random(b[1]) + b[2]);
                 r += s[i];
             }
             let s2 = s.join(' ');
@@ -1048,7 +1049,7 @@ client.on("messageCreate", async message => {
         }
     }
     else if (command == 'r' || command == 'roll') {
-        message.channel.send(roll(args.join("")));
+        message.channel.send(dice.roll(args.join("")));
     }
     else if (command == 'w' || command == 'welcome') {
         let a = args.shift();
@@ -1211,9 +1212,9 @@ client.on("messageCreate", async message => {
             d.push(0);
         }
         for (let i = 0; i < c; i++) {
-            let e = random(a * b);
+            let e = random.random(a * b);
             while (d[e] == -1) {
-                e = random(a * b);
+                e = random.random(a * b);
             }
             d[e] = -1;
         }
@@ -1411,7 +1412,7 @@ client.on("messageCreate", async message => {
                 });
             return;
         }
-        let a = random(20);
+        let a = random.random(20);
         let b = '';
         switch (a) {
             case 0:
@@ -1483,7 +1484,7 @@ client.on("messageCreate", async message => {
         f.split(/\r?\n/).forEach(line => {
             r++;
         });
-        r = random(r);
+        r = random.random(r);
         f.split(/\r?\n/).forEach(line => {
             if (!r)
                 message.channel.send(line);
@@ -1620,7 +1621,7 @@ client.on("messageCreate", async message => {
                     { name: 'Count', value: `VAL: **cs**,**cf**\n**C**ounts **s**uccesses and/or **f**ailures according to the conditions after it.` },
                     { name: 'Subtract / Deduct Failures', value: `VAL: **sf**, **df**\n**D**educt (-1) or **s**ubtract every failed value.` },
                     { name: 'Output:', value: `normal, **success**, __failure__, ~~discarded~~.` }
-                );
+                ); //copied to roll.js
             message.channel.send({ embeds: [embed] });
             return;
         }
@@ -1938,266 +1939,6 @@ client.on('interactionCreate', async i => {
         }
     }
 });
-
-function roll(a) {
-    let b = a.toString();
-    if (a.includes(":"))
-        return "do not the dice";
-    a = a.replaceAll("-", ":-").replaceAll("*", ":*").replaceAll("/", ":/").replaceAll("+", ":+");
-    let ser = "";
-    let it = 1;
-    if (a.includes("t")) {
-        let b = a.split("t");
-        it = parseInt(b[0]);
-        a = b[1];
-        if (isNaN(it) || it < 1)
-            return "i did not the dice";
-    }
-    if (it > 64)
-        return "do not the dice, use the old roll";
-    a = "+" + a;
-    a = a.split(":");
-    for (let j = 0; j < it; j++)
-        ser += rull(a);
-    return `[${b.replaceAll("*", "\\*")}]\n${ser}`;
-}
-
-function rull(a) {
-    let str = "";
-    let rs = 0;
-    for (let jk = 0; jk < a.length; jk++) {
-        let op = '+';
-        op = a[jk][0];
-        let c = [...a[jk].substring(1).replaceAll("ev", "ev1").replaceAll("even", "ev1").replaceAll("od", "od1").replaceAll("odd", "od1").matchAll(/[a-z=<>]+\d+/g)]; //not elegant but whatever
-        let b = 0;
-        let amt = 0;
-        let sid = 1;
-        let ii = 1;
-        let cs = false;
-        let cff = false;
-        let df = false;
-        let sf = false;
-        amt = a[jk].match(/^[+\-*\/]\d+/g)[0].substring(1);
-        if (c.length == 0) {
-            jk == 0 ? str += `[${amt}] ` : str += `${op == "*" ? "\\*" : op} [${amt}] `;
-            rs = eval(rs + op + amt);
-            continue;
-        }
-        let res = [];
-        let sta = []; //-2 drop -1 fail 0 1 succ
-        for (let k = 0; k < c.length; k++) {
-            ev = '==';
-            let d = c[k][0].match(/[a-z=<>]+/g)[0];
-            let e = parseInt(c[k][0].match(/\d+/g)[0]);
-            if (e > 4294967295)
-                e = 4294967295;
-            if (d.startsWith('i')) {
-                ii = 1000;
-                d = d.substring(1);
-            }
-            if (!d.startsWith("dl") && !d.startsWith("dh") && !d.startsWith("k")) {
-                if (d.endsWith("he") || d.endsWith(">=")) {
-                    ev = ">=";
-                    d = d.substring(0, d.length - 2);
-                }
-                if (d.endsWith("le") || d.endsWith("<=")) {
-                    ev = "<=";
-                    d = d.substring(0, d.length - 2);
-                }
-                if (d.endsWith("h") || d.endsWith(">")) {
-                    ev = ">";
-                    d = d.substring(0, d.length - 1);
-                }
-                if (d.endsWith("l") || d.endsWith("<")) {
-                    ev = "<";
-                    d = d.substring(0, d.length - 1);
-                }
-            }
-            switch (d) {
-                case 'd':
-                    sid = e;
-                    for (let i = 0; i < amt; i++) {
-                        res.push(random(sid) + 1);
-                        sta.push(0);
-                    }
-                    break;
-                case 'e':
-                    let i = 0;
-                    for (let j = 0; j < ii; j++) {
-                        b = 0;
-                        if (i == res.length)
-                            continue;
-                        for (; i < res.length; i++)
-                            if (eval(res[i] + ev + e)) {
-                                b++;
-                            }
-                        for (let i = 0; i < b; i++) {
-                            res.push(random(sid) + 1);
-                            sta.push(0);
-                        }
-                    }
-                    break;
-                case 'k': case 'kh':
-                    e = res.length - e;
-                case 'dl':
-                    if (e > res.length)
-                        e = res.length;
-                    for (let i = 0; i < e; i++) {
-                        sta[find(1, res, sta)] = -2;
-                    }
-                    break;
-                case 'kl':
-                    e = res.length - e;
-                case 'dh':
-                    if (e > res.length)
-                        e = res.length;
-                    for (let i = 0; i < e; i++) {
-                        sta[find(0, res, sta)] = -2;
-                    }
-                    break;
-                case 'r':
-                    for (let j = 0; j < ii; j++) {
-                        b = 0;
-                        for (let i = 0; i < res.length; i++)
-                            if (eval(res[i] + ev + e)) {
-                                res[i] = random(sid);
-                                b++;
-                            }
-                        if (b == 0)
-                            continue;
-                    }
-                    break;
-                case 'min':
-                    if (e <= sid)
-                        for (let i = 0; i < res.length; i++)
-                            if (res[i] <= e)
-                                res[i] = e;
-                    break;
-                case 'max':
-                    if (e > 0)
-                        for (let i = 0; i < res.length; i++)
-                            if (res[i] >= e)
-                                res[i] = e;
-                    break;
-                case 'cs':
-                    cs = true;
-                    for (let i = 0; i < res.length; i++)
-                        if (sta[i] != -2) {
-                            if (eval(res[i] + ev + e))
-                                sta[i] = 1;
-                        }
-                    break;
-                case 'ev':
-                    cs = true;
-                    for (let i = 0; i < res.length; i++)
-                        if (sta[i] != -2) {
-                            if (res[i] % 2)
-                                sta[i] = 1;
-                        }
-                    break;
-                case 'od':
-                    cs = true;
-                    for (let i = 0; i < res.length; i++)
-                        if (sta[i] != -2) {
-                            if (!res[i] % 2)
-                                sta[i] = 1;
-                        }
-                    break;
-                case 'cf':
-                    cff = true;
-                    df = false;
-                    sf = false;
-                    for (let i = 0; i < res.length; i++)
-                        if (sta[i] != -2) {
-                            if (eval(res[i] + ev + e))
-                                sta[i] = -1;
-                        }
-                    break;
-                case 'sf':
-                    sf = true;
-                    df = false;
-                    cff = false;
-                    for (let i = 0; i < res.length; i++)
-                        if (sta[i] != -2) {
-                            if (eval(res[i] + ev + e))
-                                sta[i] = -1;
-                        }
-                    break;
-                case 'df':
-                    df = true;
-                    sf = false;
-                    cff = false;
-                    for (let i = 0; i < res.length; i++)
-                        if (sta[i] != -2) {
-                            if (eval(res[i] + ev + e))
-                                sta[i] = -1;
-                        }
-                    break;
-                default:
-                    break;
-            }
-        }
-        jk == 0 ? str += `[` : str += `${op == "*" ? "\\*" : op} [`;
-        let rss = 0;
-        for (let i = 0; i < res.length; i++) {
-            switch (sta[i]) {
-                case -2:
-                    str += `~~${res[i]}~~, `;
-                    break;
-                case -1:
-                    str += `__${res[i]}__, `;
-                    if (cff)
-                        rss++;
-                    if (sf)
-                        rss -= res[i];
-                    if (df)
-                        rss--;
-                    break;
-                case 1:
-                    str += `**${res[i]}**, `;
-                    if (cs)
-                        rss++;
-                    else
-                        rss += res[i];
-                    break;
-                default:
-                    str += `${res[i]}, `;
-                    if (!cs && !cff)
-                        rss += res[i];
-                    break;
-            }
-        }
-        if (res.length == 0)
-            str += 0;
-        str += `] `;
-        str = str.replace(", ]", "]");
-        rs = eval(rs + op + rss);
-    }
-    return str + `= ${rs}\n`;
-}
-
-function find(a, b, sta) {
-    let c = 0;
-    let d = 0;
-    if (a) {
-        d = Infinity;
-        for (let i = 0; i < b.length; i++) {
-            if (sta[i] != -2 && b[i] < d) {
-                c = i;
-                d = b[i];
-            }
-        }
-    }
-    else {
-        for (let i = 0; i < b.length; i++) {
-            if (sta[i] != -2 && b[i] > d) {
-                c = i;
-                d = b[i];
-            }
-        }
-    }
-    return c;
-}
 
 function checkmate(a, b, f) {
     let d, e = 0;
@@ -3109,17 +2850,6 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function random(a) {
-    if (rnd.length == 0) {
-        let b = aes.aes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0, 0, 0, 0, data.ctr & 0xff000000, data.ctr & 0xff0000, data.ctr & 0xff00, data.ctr & 0xff]);
-        data.ctr++;
-        while (b.length > 0) {
-            rnd.push(b.pop() * 0x01000000 + b.pop() * 0x00010000 + b.pop() * 0x00000100 + b.pop() * 0x00000001);
-        }
-    }
-    return Math.floor((rnd.pop() / 0x100000000) * a);
-}
-
 setInterval(async function () {
     setStatus();
 }, 300000);
@@ -3166,7 +2896,8 @@ setInterval(async function () {
 }, 5000);
 
 async function save() {
-    data.save = new Date().toDateString();
+    data.save = new Date().toString();
+    data.ctr = random.get();
     fs.writeFileSync(df, JSON.stringify(data, null, 2), function writeJSON(err) {
         if (err) return console.log(err);
     });

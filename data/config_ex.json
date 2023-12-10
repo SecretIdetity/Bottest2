@@ -1,6 +1,6 @@
 {
-    "token": "cool token",
-    "guild": "guildid",
+    "token": "bot token",
+    "id": "bot user id (for csetup.js)",
     "admin": "userid",
     "color": "#145DA0"
-  }
+}

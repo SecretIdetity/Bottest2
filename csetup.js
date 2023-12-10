@@ -1,5 +1,5 @@
 const { REST, Routes } = require('discord.js');
-conf = require('./config.json');
+conf = require('./data/config.json');
 const fs = require('node:fs');
 
 const commands = [];
