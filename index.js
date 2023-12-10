@@ -10,7 +10,7 @@ df = 'data.json';
 ef = 'epic.json';
 gf = 'games.json';
 ddir = './data/';
-if (1) { //debug
+if (0) { //debug
     cf = 'configg.json';
     df = 'dataa.json';
     ef = 'epicc.json';
