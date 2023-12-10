@@ -10,7 +10,7 @@ df = 'data.json';
 ef = 'epic.json';
 gf = 'games.json';
 ddir = './data/';
-if (0) { //debug
+if (1) { //debug
     cf = 'configg.json';
     df = 'dataa.json';
     ef = 'epicc.json';
@@ -103,6 +103,7 @@ client.on('error', (e) => {
     console.log(e);
 });
 client.once('ready', async () => {
+    random.set(data.ctr);
     echan = {}
     xchan = {}
     wchan = {}
