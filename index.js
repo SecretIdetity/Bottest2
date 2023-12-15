@@ -2561,7 +2561,11 @@ async function epic() {
                     let u = i.catalogNs?.mappings == undefined || i.catalogNs?.mappings[0]?.pageSlug == undefined ? i.productSlug : i.catalogNs.mappings[0].pageSlug;
                     let o = i.price?.totalPrice?.originalPrice;
                     let n = i.price?.totalPrice?.discountPrice;
-                    let k = i.keyImages[1]?.url;
+                    let k = i.keyImages[0]?.url;
+                    for(let img in i.keyImages){
+                        if(i.keyImages[img]?.type == "OfferImageWide" || i.keyImages[img]?.type == "DieselStoreFrontWide")
+                            k = i.keyImages[img].url;
+                    }
                     let l = i.description;
                     let m = [t, s, e, u, o, n, k, l];
                     if (games.epic.now.length > 0)
@@ -2573,10 +2577,10 @@ async function epic() {
                         games.epic.now[games.epic.now.length] = m;
                         emb[c] = new EmbedBuilder()
                             .setColor('#1a57f0')
-                            .setThumbnail('https://static-assets-prod.epicgames.com/epic-store/static/favicon.ico')
                             .setTitle(t)
                             .setURL('https://store.epicgames.com/p/' + u)
-                            .setDescription(`~~${(o / 100).toFixed(2)}$~~ ${(n / 100).toFixed(2)}$ until ${e ? new Intl.DateTimeFormat('en-DE', { dateStyle: 'full', timeStyle: 'short' }).format(e) : 'it\'s not free anymore'}`)
+                            .setDescription(`~~${(o / 100).toFixed(2)}$~~ ${(n / 100).toFixed(2)}$ until ${e ? '<t:' + Math.round(e.getTime() / 1000) + ':F>' : 'it\'s not free anymore'}`)
+                            .setThumbnail('https://cdn2.unrealengine.com/Unreal+Engine%2Feg-logo-filled-1255x1272-0eb9d144a0f981d1cbaaa1eb957de7a3207b31bb.png')
                             .setImage(k)
                             .setFooter({ text: `${l}` });
                         c++;
@@ -2609,16 +2613,16 @@ async function epic() {
                     .setTitle('Upcoming:');
                 for (let i = 0; i < d; i += 2) {
                     let ema = new Date(emc[i + 1]);
-                    emb[c].addFields({ name: emc[i], value: `${ema ? new Intl.DateTimeFormat('en-DE', { dateStyle: 'full', timeStyle: 'short' }).format(ema) : 'at some point'}` });
+                    emb[c].addFields({ name: emc[i], value: `${ema ? '<t:' + Math.round(ema.getTime() / 1000) + ':F>' : 'at some point'}` });
                 }
-                c += 1;
+                c++;
             }
             const k = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ep').setLabel('PING').setStyle(ButtonStyle.Success).setDisabled(false));
             if (c > 0) {
                 for (let guild in data.d) {
                     if (echan[guild] != undefined) {
                         let q = '';
-                        if (c > 1) {
+                        if (c > 1 || d < 1) {
                             let g = Object.values(data.d[guild].epicusr);
                             for (let i = 0; i < g.length; i++)
                                 q += `<@${g[i]}> `;
@@ -2915,10 +2919,16 @@ async function exit() {
 
 process.stdin.resume();
 
-process.on('exit', () => {
+process.on('exit', (e) => {
     console.log('exit');
+    console.log(e);
     exit();
 });
+process.on('uncaughtException', (e) => {
+    console.log('uncaughtException')
+    console.log(e);
+    exit();
+  });
 process.on('SIGINT', () => {
     console.log('SIGINT');
     exit();
