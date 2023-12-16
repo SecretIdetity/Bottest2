@@ -1700,9 +1700,9 @@ client.on('interactionCreate', async i => {
                     if (i.member.user.id != data.d[i.guild.id].ttt[i.message.id].usr.id)
                         return;
                 }
-                if (data.d[i.guild.id].ttt[i.message.id].data.d[b] != 0)
+                if (data.d[i.guild.id].ttt[i.message.id].data[b] != 0)
                     return;
-                data.d[i.guild.id].ttt[i.message.id].data.d[b] = data.d[i.guild.id].ttt[i.message.id].turn + 1;
+                data.d[i.guild.id].ttt[i.message.id].data[b] = data.d[i.guild.id].ttt[i.message.id].turn + 1;
                 c = await checkttt(data.d[i.guild.id].ttt[i.message.id].data);
                 if (c == '9') {
                     const r1 = new ActionRowBuilder().addComponents(setttt(data.d[i.guild.id].ttt[i.message.id].data, '0').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '1').setDisabled(true), setttt(data.d[i.guild.id].ttt[i.message.id].data, '2').setDisabled(true));
@@ -1761,7 +1761,7 @@ client.on('interactionCreate', async i => {
                     for (let j = 0; j < 42; j++) {
                         if (j % 7 == 0)
                             s += '\n|';
-                        switch (data.d[i.guild.id].con[i.message.id].data.d[j]) {
+                        switch (data.d[i.guild.id].con[i.message.id].data[j]) {
                             case 0:
                                 s += '  |';
                                 break;
@@ -1786,12 +1786,12 @@ client.on('interactionCreate', async i => {
                     if (i.member.user.id != data.d[i.guild.id].con[i.message.id].usr.id)
                         return;
                 }
-                if (data.d[i.guild.id].con[i.message.id].data.d[b] != 0)
+                if (data.d[i.guild.id].con[i.message.id].data[b] != 0)
                     return;
                 for (let it = 0; it < 6; it++) {
                     let d = 35 + b - it * 7;
-                    if (data.d[i.guild.id].con[i.message.id].data.d[d] == 0) {
-                        data.d[i.guild.id].con[i.message.id].data.d[d] = data.d[i.guild.id].con[i.message.id].turn + 1;
+                    if (data.d[i.guild.id].con[i.message.id].data[d] == 0) {
+                        data.d[i.guild.id].con[i.message.id].data[d] = data.d[i.guild.id].con[i.message.id].turn + 1;
                         break;
                     }
                 }
@@ -1807,7 +1807,7 @@ client.on('interactionCreate', async i => {
                         for (let j = 0; j < 42; j++) {
                             if (j % 7 == 0)
                                 s += '\n|';
-                            switch (data.d[i.guild.id].con[i.message.id].data.d[j]) {
+                            switch (data.d[i.guild.id].con[i.message.id].data[j]) {
                                 case 0:
                                     s += '  |';
                                     break;
@@ -1835,7 +1835,7 @@ client.on('interactionCreate', async i => {
                             if (j % 7 == 0)
                                 s += '\n|';
                             if (j == c[1] || j == c[2] || j == c[3] || j == c[4])
-                                switch (data.d[i.guild.id].con[i.message.id].data.d[j]) {
+                                switch (data.d[i.guild.id].con[i.message.id].data[j]) {
                                     case 1:
                                         s += '⭕|';
                                         break;
@@ -1844,7 +1844,7 @@ client.on('interactionCreate', async i => {
                                         break;
                                 }
                             else
-                                switch (data.d[i.guild.id].con[i.message.id].data.d[j]) {
+                                switch (data.d[i.guild.id].con[i.message.id].data[j]) {
                                     case 0:
                                         s += '  |';
                                         break;
@@ -1866,7 +1866,7 @@ client.on('interactionCreate', async i => {
                         for (let j = 0; j < 42; j++) {
                             if (j % 7 == 0)
                                 s += '\n|';
-                            switch (data.d[i.guild.id].con[i.message.id].data.d[j]) {
+                            switch (data.d[i.guild.id].con[i.message.id].data[j]) {
                                 case 0:
                                     s += '  |';
                                     break;
@@ -2579,7 +2579,7 @@ async function epic() {
                             .setColor('#1a57f0')
                             .setTitle(t)
                             .setURL('https://store.epicgames.com/p/' + u)
-                            .setDescription(`~~${(o / 100).toFixed(2)}$~~ ${(n / 100).toFixed(2)}$ until ${e ? '<t:' + Math.round(e.getTime() / 1000) + ':F>' : 'it\'s not free anymore'}`)
+                            .setDescription(`~~${(o / 100).toFixed(2)}$~~ ${(n / 100).toFixed(2)}$\n${s ? '<t:' + Math.round(s.getTime() / 1000) + ':D>' : '<t:' + Math.round(new Date().getTime() / 1000) + ':D>'} - ${e ? '<t:' + Math.round(e.getTime() / 1000) + ':F>' : '??'}`)
                             .setThumbnail('https://cdn2.unrealengine.com/Unreal+Engine%2Feg-logo-filled-1255x1272-0eb9d144a0f981d1cbaaa1eb957de7a3207b31bb.png')
                             .setImage(k)
                             .setFooter({ text: `${l}` });
@@ -2792,10 +2792,10 @@ setInterval(async function () {
                                 else if (!data.d[guild].con[i].turn)
                                     s += `The winner is ${data.d[guild].con[m.id].usr},\n${data.d[guild].con[m.id].init} timed out.`;
                                 s += '\n```\n| 1  2  3  4  5  6  7|';
-                                for (let j = 0; j < 42; j++) {
-                                    if (j % 7 == 0)
+                                for (let k = 0; k < 42; k++) {
+                                    if (k % 7 == 0)
                                         s += '\n|';
-                                    switch (data.d[guild].con[m.id].data.d[guild][j]) {
+                                    switch (data.d[guild].con[m.id].data[k]) {
                                         case 0:
                                             s += '  |';
                                             break;
