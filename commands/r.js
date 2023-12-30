@@ -20,7 +20,7 @@ module.exports = {
                     { name: 'Advanced Syntax', value: `The explode, reroll and success/failure modifiers all support adding he/>=, h/>, le/<=, l/< (nothing is ==) and a number after them.` },
                     { name: 'Infinite', value: `VAL: **i**xx\nAdding i before explode or reroll makes it iterate **i**nfinitely-ish.` },
                     { name: 'Explode', value: `VAL: **e**\nIf the conditions after **e** are met, another roll is made.` },
-                    { name: 'Reroll', value: `VAL: **r**\nIf the conditions after **r** are met, the throw is re**r**olled.` },
+                    { name: 'Reroll', value: `VAL: **r**\nIf the conditions after **r** are met, the throw is **r**erolled.` },
                     { name: 'Keep / Drop', value: `VAL: **k**/**kh**, **kl**, **dl**, **dh**\n**D**rops or **k**eeps the **h**ighest or **l**owest throws.` },
                     { name: 'Min / Max', value: `VAL: **min**,**max**\nMakes every throw either higher than the **min**inimum or/and lower than the **max**imum.` },
                     { name: 'Even / Odd', value: `VAL: **ev**/**even**, **od**/**odd**\nCounts the amount of **even**/**odd** number.` },

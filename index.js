@@ -2542,104 +2542,109 @@ async function epic() {
     } catch (e) { return; };
     if (r != undefined && r.status == 200) {
         if (JSON.stringify(r.data) != JSON.stringify(egfg)) {
-            egfg = r.data;
-            let date = new Date();
-            let c = 0;
-            let d = 0;
-            let emb = [];
-            let emc = [];
-            r.data.data.Catalog.searchStore.elements.forEach(i => {
-                let s;
-                let e;
-                let f = 0;
-                try {
-                    s = new Date(i.promotions.promotionalOffers[0].promotionalOffers[0].startDate);
-                    e = new Date(i.promotions.promotionalOffers[0].promotionalOffers[0].endDate);
-                } catch (e) { f = 1; };
-                if (f == 0 && s < date && e > date && i.price?.totalPrice?.discountPrice == 0) {//}) && i.price.totalPrice.discount > 0) { epig games api trippin wtf
-                    let t = i.title;
-                    let u = i.catalogNs?.mappings == undefined || i.catalogNs?.mappings[0]?.pageSlug == undefined ? i.productSlug : i.catalogNs.mappings[0].pageSlug;
-                    let o = i.price?.totalPrice?.originalPrice;
-                    let n = i.price?.totalPrice?.discountPrice;
-                    let k = i.keyImages[0]?.url;
-                    for(let img in i.keyImages){
-                        if(i.keyImages[img]?.type == "OfferImageWide" || i.keyImages[img]?.type == "DieselStoreFrontWide")
-                            k = i.keyImages[img].url;
-                    }
-                    let l = i.description;
-                    let m = [t, s, e, u, o, n, k, l];
-                    if (games.epic.now.length > 0)
-                        games.epic.now.forEach(i => {
-                            if (JSON.stringify(i) == JSON.stringify(m))
-                                f = 1;
-                        });
-                    if (f == 0) {
-                        games.epic.now[games.epic.now.length] = m;
-                        emb[c] = new EmbedBuilder()
-                            .setColor('#1a57f0')
-                            .setTitle(t)
-                            .setURL('https://store.epicgames.com/p/' + u)
-                            .setDescription(`~~${(o / 100).toFixed(2)}$~~ ${(n / 100).toFixed(2)}$\n${s ? '<t:' + Math.round(s.getTime() / 1000) + ':D>' : '<t:' + Math.round(new Date().getTime() / 1000) + ':D>'} - ${e ? '<t:' + Math.round(e.getTime() / 1000) + ':F>' : '??'}`)
-                            .setThumbnail('https://cdn2.unrealengine.com/Unreal+Engine%2Feg-logo-filled-1255x1272-0eb9d144a0f981d1cbaaa1eb957de7a3207b31bb.png')
-                            .setImage(k)
-                            .setFooter({ text: `${l}` });
-                        c++;
-                    }
-                }
-                f = 0;
-                try {
-                    s = new Date(i.promotions.upcomingPromotionalOffers[0].promotionalOffers[0].startDate);
-                    e = new Date(i.promotions.upcomingPromotionalOffers[0].promotionalOffers[0].endDate);
-                } catch (e) { f = 1; };
-                if (f == 0 && s > date && e > date) {
-                    let n = i.title;
-                    let o = [n, s, e];
-                    if (games.epic.up.length > 0)
-                        games.epic.up.forEach(i => {
-                            if (JSON.stringify(i) == JSON.stringify(o))
-                                f = 1;
-                        });
-                    if (f == 0) {
-                        games.epic.up[games.epic.up.length] = o;
-                        emc[d] = i.title;
-                        emc[d + 1] = s;
-                        d += 2;
-                    }
-                }
-            });
-            if (d > 0) {
-                emb[c] = new EmbedBuilder()
-                    .setColor('#1a57f0')
-                    .setTitle('Upcoming:');
-                for (let i = 0; i < d; i += 2) {
-                    let ema = new Date(emc[i + 1]);
-                    emb[c].addFields({ name: emc[i], value: `${ema ? '<t:' + Math.round(ema.getTime() / 1000) + ':F>' : 'at some point'}` });
-                }
-                c++;
-            }
-            const k = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ep').setLabel('PING').setStyle(ButtonStyle.Success).setDisabled(false));
-            if (c > 0) {
-                for (let guild in data.d) {
-                    if (echan[guild] != undefined) {
-                        let q = '';
-                        if (c > 1 || d < 1) {
-                            let g = Object.values(data.d[guild].epicusr);
-                            for (let i = 0; i < g.length; i++)
-                                q += `<@${g[i]}> `;
+            try {
+                egfg = r.data;
+                let date = new Date();
+                let c = 0;
+                let d = 0;
+                let emb = [];
+                let emc = [];
+                r.data.data.Catalog.searchStore.elements.forEach(i => {
+                    let s;
+                    let e;
+                    let f = 0;
+                    try {
+                        s = new Date(i.promotions.promotionalOffers[0].promotionalOffers[0].startDate);
+                        e = new Date(i.promotions.promotionalOffers[0].promotionalOffers[0].endDate);
+                    } catch (e) { f = 1; };
+                    if (f == 0 && s < date && e > date && i.price?.totalPrice?.discountPrice == 0) {//}) && i.price.totalPrice.discount > 0) { epig games api trippin wtf
+                        let t = i.title;
+                        let u = i.catalogNs?.mappings == undefined || i.catalogNs?.mappings[0]?.pageSlug == undefined ? i.productSlug : i.catalogNs.mappings[0].pageSlug;
+                        let o = i.price?.totalPrice?.originalPrice;
+                        let n = i.price?.totalPrice?.discountPrice;
+                        let k = i.keyImages[0]?.url;
+                        for (let img in i.keyImages) {
+                            if (i.keyImages[img]?.type == "OfferImageWide" || i.keyImages[img]?.type == "DieselStoreFrontWide")
+                                k = i.keyImages[img].url;
                         }
-                        if (emb.length > 0)
-                            if (q == '')
-                                echan[guild].send({ embeds: emb, components: [k] });
-                            else
-                                echan[guild].send({ content: q, embeds: emb, components: [k] });
+                        let l = i.description;
+                        let m = [t, s, e, u, o, n, k, l];
+                        if (games.epic.now.length > 0)
+                            games.epic.now.forEach(i => {
+                                if (JSON.stringify(i) == JSON.stringify(m))
+                                    f = 1;
+                            });
+                        if (f == 0) {
+                            games.epic.now[games.epic.now.length] = m;
+                            emb[c] = new EmbedBuilder()
+                                .setColor('#1a57f0')
+                                .setTitle(t)
+                                .setURL('https://store.epicgames.com/p/' + u)
+                                .setDescription(`~~${(o / 100).toFixed(2)}$~~ ${(n / 100).toFixed(2)}$\n${s ? '<t:' + Math.round(s.getTime() / 1000) + ':D>' : '<t:' + Math.round(new Date().getTime() / 1000) + ':D>'} - ${e ? '<t:' + Math.round(e.getTime() / 1000) + ':F>' : '??'}`)
+                                .setThumbnail('https://cdn2.unrealengine.com/Unreal+Engine%2Feg-logo-filled-1255x1272-0eb9d144a0f981d1cbaaa1eb957de7a3207b31bb.png')
+                                .setImage(k)
+                                .setFooter({ text: `${l}` });
+                            c++;
+                        }
                     }
-                }
-                let h = Object.values(data.epicuser);
-                h.forEach(async function (i) {
-                    await client.users.fetch(i);
-                    let us = client.users.cache.get(i);
-                    us.send({ embeds: emb }).catch(console.error);
+                    f = 0;
+                    try {
+                        s = new Date(i.promotions.upcomingPromotionalOffers[0].promotionalOffers[0].startDate);
+                        e = new Date(i.promotions.upcomingPromotionalOffers[0].promotionalOffers[0].endDate);
+                    } catch (e) { f = 1; };
+                    if (f == 0 && s > date && e > date) {
+                        let n = i.title;
+                        let o = [n, s, e];
+                        if (games.epic.up.length > 0)
+                            games.epic.up.forEach(i => {
+                                if (JSON.stringify(i) == JSON.stringify(o))
+                                    f = 1;
+                            });
+                        if (f == 0) {
+                            games.epic.up[games.epic.up.length] = o;
+                            emc[d] = i.title;
+                            emc[d + 1] = s;
+                            d += 2;
+                        }
+                    }
                 });
+                if (d > 0) {
+                    emb[c] = new EmbedBuilder()
+                        .setColor('#1a57f0')
+                        .setTitle('Upcoming:');
+                    for (let i = 0; i < d; i += 2) {
+                        let ema = new Date(emc[i + 1]);
+                        emb[c].addFields({ name: emc[i], value: `${ema ? '<t:' + Math.round(ema.getTime() / 1000) + ':F>' : 'at some point'}` });
+                    }
+                    c++;
+                }
+                const k = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ep').setLabel('PING').setStyle(ButtonStyle.Success).setDisabled(false));
+                if (c > 0) {
+                    for (let guild in data.d) {
+                        if (echan[guild] != undefined) {
+                            let q = '';
+                            if (c > 1 || d < 1) {
+                                let g = Object.values(data.d[guild].epicusr);
+                                for (let i = 0; i < g.length; i++)
+                                    q += `<@${g[i]}> `;
+                            }
+                            if (emb.length > 0)
+                                if (q == '')
+                                    echan[guild].send({ embeds: emb, components: [k] });
+                                else
+                                    echan[guild].send({ content: q, embeds: emb, components: [k] });
+                        }
+                    }
+                    let h = Object.values(data.epicuser);
+                    h.forEach(async function (i) {
+                        await client.users.fetch(i);
+                        let us = client.users.cache.get(i);
+                        us.send({ embeds: emb }).catch(console.error);
+                    });
+                }
+            }
+            catch (e) {
+                console.log(e);
             }
         }
     }
@@ -2928,7 +2933,7 @@ process.on('uncaughtException', (e) => {
     console.log('uncaughtException')
     console.log(e);
     exit();
-  });
+});
 process.on('SIGINT', () => {
     console.log('SIGINT');
     exit();

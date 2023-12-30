@@ -123,7 +123,7 @@ function rull(a) {
                         b = 0;
                         for (let i = 0; i < res.length; i++)
                             if (eval(res[i] + ev + e)) {
-                                res[i] = random.random(sid);
+                                res[i] = random.random(sid) + 1;
                                 b++;
                             }
                         if (b == 0)
