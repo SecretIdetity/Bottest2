@@ -25,7 +25,7 @@ module.exports = {
                     { name: 'Min / Max', value: `VAL: **min**,**max**\nMakes every throw either higher than the **min**inimum or/and lower than the **max**imum.` },
                     { name: 'Even / Odd', value: `VAL: **ev**/**even**, **od**/**odd**\nCounts the amount of **even**/**odd** number.` },
                     { name: 'Count', value: `VAL: **cs**,**cf**\n**C**ounts **s**uccesses and/or **f**ailures according to the conditions after it.` },
-                    { name: 'Subtract / Deduct Failures', value: `VAL: **sf**, **df**\n**D**educt (-1) or **s**ubtract every failed value.` },
+                    { name: 'Subtract / Deduct Failures', value: `VAL: **sf**, **df**\n**D**educt (-1) or **s**ubtract every **f**ailed value.` },
                     { name: 'Output:', value: `normal, **success**, __failure__, ~~discarded~~.` }
                 ); //copied from index.js
             i.reply({ embeds: [embed] });
