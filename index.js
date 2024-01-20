@@ -164,7 +164,7 @@ client.on("guildMemberAdd", async member => {
         });
     }
     else {
-        const r = await axios({ url: "https://cdn.discordapp.com/avatars/" + message.author.id + "/" + message.author.avatar + ".png?size=256", method: 'GET', responseType: 'stream' });
+        const r = await axios({ url: "https://cdn.discordapp.com/avatars/" + member.user.id + "/" + u.avatar + ".png?size=256", method: 'GET', responseType: 'stream' });
         await r.data.pipe(fs.createWriteStream('./avatar.png'));
     }
     await sleep(500);
