@@ -14,7 +14,7 @@ Or host yourself:
 To use it you need node.js (and probably npm too).     
 Clone the files and run npm install once you installed node and npm.     
 Then just use node index.js to start the bot.      
-**You need both config.js and data.js to use the bot.**     
+**You need both config.json and data.json to use the bot.**     
 You can find example configs named with _ex.
 
 Use csetup.js to setup slash commands (Credit due?? i forgor).
