@@ -278,7 +278,6 @@ client.on("messageCreate", async message => {
     else if (command === 'soundboard' && conf.player) { }
     else if (command === 'filter' && conf.player) { }
     else if (command === 'hot' && conf.player) { }
-    else if (command === 'p' && conf.player) { }
     else if (command === "ttt" || command === 'tictactoe' || command === '3') {
         if (data.d[message.guild.id].ttt == undefined)
             data.d[message.guild.id].ttt = {};
