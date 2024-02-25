@@ -5,6 +5,7 @@ const path = require('path');
 const { registerFont, createCanvas, loadImage } = require('canvas');
 const axios = require('axios');
 const { XMLParser, XMLBuilder, XMLValidator } = require('fast-xml-parser');
+player = true; //if another instance using play commands exists 
 cf = 'config.json';
 df = 'data.json';
 ef = 'epic.json';
@@ -255,7 +256,30 @@ client.on("messageCreate", async message => {
     const args = commandBody.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').split(' ');
     const command = args.shift().toLowerCase();
     let s = '';
-    if (command === "ttt" || command === 'tictactoe' || command === '3') {
+    if (command === 's' && conf.conf.player) { }
+    else if (command === 'search' && conf.player) { }
+    else if (command === 'p' && conf.player) { }
+    else if (command === 'play' && conf.player) { }
+    else if (command === 'skip' && conf.player) { }
+    else if (command === 'pause' && conf.player) { }
+    else if (command === 'prev' && conf.player) { }
+    else if (command === 'previous' && conf.player) { }
+    else if (command === 'take' && conf.player) { }
+    else if (command === 'force' && conf.player) { }
+    else if (command === 'stop' && conf.player) { }
+    else if (command === 'leave' && conf.player) { }
+    else if (command === 'rem' && conf.player) { }
+    else if (command === 'remove' && conf.player) { }
+    else if (command === 'l' && conf.player) { }
+    else if (command === 'list' && conf.player) { }
+    else if (command === 'sh' && conf.player) { }
+    else if (command === 'shuffle' && conf.player) { }
+    else if (command === 'sb' && conf.player) { }
+    else if (command === 'soundboard' && conf.player) { }
+    else if (command === 'filter' && conf.player) { }
+    else if (command === 'hot' && conf.player) { }
+    else if (command === 'p' && conf.player) { }
+    else if (command === "ttt" || command === 'tictactoe' || command === '3') {
         if (data.d[message.guild.id].ttt == undefined)
             data.d[message.guild.id].ttt = {};
         let init = message.author;
@@ -1601,10 +1625,11 @@ client.on("messageCreate", async message => {
         message.channel.send({ content: ':warning:This feature is still a work in progress!', embeds: [emb] });
     }
     else if (command == 'help' || command == 'h') {
-        if (args[0] == 'play' || args[0] == 'p' || args[0] == 'player') {
-            message.channel.send(`i forgor 💀,\n${message.author}.`);
-            return;
-        }
+        if (!conf.player)
+            if (args[0] == 'play' || args[0] == 'p' || args[0] == 'player') {
+                message.channel.send(`i forgor 💀,\n${message.author}.`);
+                return;
+            }
         if (args[0] == 'r' || args[0] == 'roll') {
             const embed = new EmbedBuilder()
                 .setColor('#1a57f0')

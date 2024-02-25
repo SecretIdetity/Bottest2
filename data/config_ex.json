@@ -2,5 +2,6 @@
     "token": "bot token",
     "id": "bot user id (for csetup.js)",
     "admin": "userid",
-    "color": "#145DA0"
+    "color": "#145DA0",
+    "player": 0
 }
