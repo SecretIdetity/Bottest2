@@ -255,7 +255,7 @@ client.on("messageCreate", async message => {
     const args = commandBody.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').split(' ');
     const command = args.shift().toLowerCase();
     let s = '';
-    if (command === 's' && conf.conf.player) { }
+    if (command === 's' && conf.player) { }
     else if (command === 'search' && conf.player) { }
     else if (command === 'p' && conf.player) { }
     else if (command === 'play' && conf.player) { }
