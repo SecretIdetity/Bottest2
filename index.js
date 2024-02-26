@@ -5,7 +5,6 @@ const path = require('path');
 const { registerFont, createCanvas, loadImage } = require('canvas');
 const axios = require('axios');
 const { XMLParser, XMLBuilder, XMLValidator } = require('fast-xml-parser');
-player = true; //if another instance using play commands exists 
 cf = 'config.json';
 df = 'data.json';
 ef = 'epic.json';
